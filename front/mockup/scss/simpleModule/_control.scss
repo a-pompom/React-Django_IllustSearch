@@ -1,0 +1,37 @@
+@use "../mixin" as Mixin;
+
+// 制御のために利用するスタイルを管理
+
+.hidden-item {
+	transform: scaleY(0);
+	height: 0;
+}
+
+.hidden-modal {
+	display: none;
+}
+
+.hidden-accordion {
+	display: none;
+}
+
+// レスポンシブ用
+// pc パソコン
+// sp スマートフォン
+// tb タブレット
+// pc-tbの場合、スマートフォンのみ非表示となる
+@include Mixin.responsive(sp) {
+	.tb { display:none !important;}
+	.pc-tb { display:none !important;}
+	.pc { display:none !important;}
+}
+@include Mixin.responsive(tb) {
+	.sp { display:none !important;}
+	.sp-pc { display:none !important;}
+	.pc { display:none !important;}
+}
+@include Mixin.responsive(pc) {
+	.sp { display:none !important;}
+	.tb { display:none !important;}
+	.sp-tb { display:none !important;}
+}

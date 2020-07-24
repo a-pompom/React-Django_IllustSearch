@@ -1,0 +1,19 @@
+$breakpoints: (
+	'sp': 'screen and (max-width: 559px)',
+	'tb': 'screen and (min-width: 559px) and (max-width: 959px)',
+	'pc': 'screen and (min-width: 959px)',
+	'sp-tb': 'screen and (max-width: 959px)',
+	'tb-pc': 'screen and (min-width: 559px)',
+) !default;
+
+// color
+$darkest: #223254;
+$dark: #9CA5B9;
+$light: #C8CCD4;
+$lightest: #F4F3F6;
+
+$accent-strong: #142C23;
+$accent-middle: #BAD7B6;
+$accent-weak: #D8F3E7;
+
+$reverseAccent: #DF89B9;

@@ -1,0 +1,23 @@
+%button {
+	
+	position: relative;
+	display: inline-block;
+	
+	font-weight: bold;
+	text-decoration: none;
+	
+	cursor: pointer;
+		
+}
+
+%button--simple {
+	
+	@extend %button;
+	
+	transition: .4s;
+	
+	&:hover {
+		color: #fff;
+	}
+	
+}
