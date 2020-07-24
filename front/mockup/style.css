@@ -1,0 +1,189 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  font-size: 90%;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #4d464f;
+  background-color: #BAD7B6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+p {
+  line-height: 1rem;
+}
+
+a {
+  display: block;
+  text-decoration: none;
+  color: #4d464f;
+}
+a:checked {
+  color: #4d464f;
+}
+
+input[type=text], input[type=password] {
+  -webkit-appearance: none;
+  border: 0;
+}
+input[type=text]:focus, input[type=password]:focus {
+  background: none;
+  outline: none;
+}
+
+textarea {
+  -webkit-appearance: none;
+  border: 0;
+  resize: none;
+}
+textarea:focus {
+  outline: none;
+}
+
+.error {
+  display: block;
+  color: #CB72AA;
+  text-align: center;
+}
+
+.Button {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.Button {
+  transition: 0.4s;
+}
+.Button:hover {
+  color: #fff;
+}
+
+.Login .Button {
+  font-size: 1.9rem;
+  background-color: #142C23;
+  color: #F4F3F6;
+}
+.Login .Button:hover {
+  color: #142C23;
+  background-color: #F4F3F6;
+}
+@media screen and (max-width: 959px) {
+  .Login .Button {
+    width: 60vw;
+    max-width: 360px;
+    height: 42px;
+    margin-left: 25vw;
+    margin-top: 3vh;
+  }
+}
+@media screen and (min-width: 959px) {
+  .Login .Button {
+    width: 40vw;
+    max-width: 360px;
+    height: 42px;
+    margin-left: 37vw;
+    margin-top: 5vh;
+  }
+}
+
+.Button {
+  background-color: #F4F3F6;
+}
+
+.Login .Input {
+  display: block;
+  font-size: 1.8rem;
+}
+.Login .Input:focus {
+  background-color: #F4F3F6;
+}
+@media screen and (max-width: 959px) {
+  .Login .Input {
+    width: 60vw;
+    max-width: 360px;
+    height: 42px;
+    margin-left: 25vw;
+    margin-top: 5vh;
+  }
+}
+@media screen and (min-width: 959px) {
+  .Login .Input {
+    width: 40vw;
+    max-width: 360px;
+    height: 42px;
+    margin-left: 37vw;
+    margin-top: 5vh;
+  }
+}
+
+.Login {
+  width: 100vw;
+  height: 100vh;
+}
+.Login .Header {
+  font-size: 2.3rem;
+  line-height: 1.8;
+  color: #F4F3F6;
+}
+@media screen and (max-width: 959px) {
+  .Login .Header {
+    padding-top: 15vh;
+    padding-left: 30vw;
+  }
+}
+@media screen and (min-width: 959px) {
+  .Login .Header {
+    padding-top: 15vh;
+    padding-left: 40vw;
+  }
+}
+.Login .Users {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 5vh;
+}
+.Login .Users .User {
+  width: 140px;
+  height: 140px;
+  font-size: 1.4rem;
+  text-align: center;
+  border-radius: 50%;
+  background-color: #F4F3F6;
+  padding-top: 70px;
+  margin: 5vh 3vw;
+  cursor: pointer;
+}
+.Login .Users .Add {
+  position: absolute;
+  bottom: 5vh;
+  right: 3vw;
+  width: 80px;
+  height: 80px;
+  font-size: 3.5rem;
+  line-height: 80px;
+  text-align: center;
+  color: #F4F3F6;
+  background-color: #DF89B9;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/*# sourceMappingURL=style.css.map */

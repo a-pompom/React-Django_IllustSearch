@@ -1,0 +1,17 @@
+@use "../simpleModule/button"; 
+@use "../variable" as Variable;
+
+@use "./ButtonLogin";
+
+.Button {
+
+    @at-root {
+
+        & {
+            @extend %button--simple;
+            
+            background-color: Variable.$lightest; 
+
+        }
+    }
+}

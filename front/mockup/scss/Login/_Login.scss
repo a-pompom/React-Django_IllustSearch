@@ -1,0 +1,76 @@
+@use "../variable" as Variable;
+@use "../mixin" as Mixin;
+
+.Login {
+    width: 100vw;
+    height: 100vh;
+    
+    .Header {
+
+        font-size: 2.3rem;
+        line-height: 1.8;
+
+        color: Variable.$lightest;
+
+        @include Mixin.responsive(sp-tb) {
+
+            padding-top: 15vh;
+            padding-left: 30vw;
+        }
+        
+        @include Mixin.responsive(pc) {
+
+            padding-top: 15vh;
+            padding-left: 40vw;
+        }
+    }
+
+    // ログイン用ユーザ一覧
+    .Users {
+
+        @include Mixin.flex-table;
+
+        margin-top: 5vh;
+
+        // ログイン用ユーザ
+        .User {
+            $_userRadius: 140px;
+
+            width: $_userRadius;
+            height: $_userRadius;
+
+            font-size: 1.4rem;
+            text-align: center;
+
+            border-radius: 50%;
+            background-color: Variable.$lightest;
+
+            padding-top: $_userRadius / 2;
+            margin: 5vh 3vw;
+
+            cursor: pointer;
+        }
+
+        // ユーザ追加アイコン
+        .Add {
+            $_addRadius: 80px;
+
+            position: absolute;
+            bottom: 5vh;
+            right: 3vw;
+
+            width: $_addRadius;
+            height: $_addRadius;
+
+            font-size: 3.5rem;
+            line-height: $_addRadius;
+            text-align: center;
+
+            color: Variable.$lightest;
+            background-color: Variable.$reverseAccent;
+
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    }
+}

@@ -1,0 +1,11 @@
+@use "../mixin" as Mixin;
+
+.Login .Form {
+
+    @include Mixin.responsive(sp) {
+    }
+    @include Mixin.responsive(tb) {
+    }
+    @include Mixin.responsive(pc) {
+    }
+}
