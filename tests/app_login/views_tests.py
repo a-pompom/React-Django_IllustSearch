@@ -52,7 +52,7 @@ class TestLoginView:
             response = self.get_response(props)
 
             # THEN
-            assert response.data[0]['username'] == 'user'
+            assert response.data['users'][0]['username'] == 'user'
 
         def test_ユーザがすでに存在するときはデフォルトユーザが生成されないこと(self, props: Props, multiple_users):
 
@@ -60,7 +60,7 @@ class TestLoginView:
             response = self.get_response(props)
 
             # THEN
-            assert {'username': 'user'} not in response.data
+            assert {'username': 'user'} not in response.data['users']
 
     class TestPost:
 
