@@ -1,4 +1,4 @@
-import { Field } from './Field';
+import { Field } from '../Field';
 
 /**
  * 最小桁数に満たないか。
