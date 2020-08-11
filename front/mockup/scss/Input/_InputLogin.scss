@@ -1,0 +1,32 @@
+@use "../variable" as Variable;
+@use "../mixin" as Mixin;
+
+.Login .Input {
+
+    display: block;
+
+    font-size: 1.8rem;
+
+    &:focus {
+
+        background-color: Variable.$lightest;
+    }
+
+    @include Mixin.responsive(sp-tb) {
+        width: 60vw;
+        max-width: 360px;
+        height: 42px;
+
+        margin-left: 25vw;
+        margin-top: 5vh;
+    }
+    
+    @include Mixin.responsive(pc) {
+        width: 40vw;
+        max-width: 360px;
+        height: 42px;
+
+        margin-left: 37vw;
+        margin-top: 5vh;
+    }
+}

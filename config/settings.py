@@ -28,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', 'testserver']
 
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'app_login.apps.AppLoginConfig',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +86,13 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# 認証用ユーザ
+# セッションからも参照される
+AUTH_USER_MODEL = 'app_login.User'
+
+# 認証処理及びセッションの参照で利用するバックエンド
+AUTHENTICATION_BACKENDS = ['app_login.backend.AuthBackend']
 
 # SQLをプロット
 LOGGING = {

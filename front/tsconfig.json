@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "noImplicitAny": false,
+      "esModuleInterop": true,
+      "target": "es2015",
+      "baseUrl": "./src/",
+      "jsx": "react",
+      "moduleResolution": "node",
+      "module": "es2015",
+    }
+}

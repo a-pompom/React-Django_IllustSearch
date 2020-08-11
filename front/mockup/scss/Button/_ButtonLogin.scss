@@ -1,0 +1,33 @@
+@use "../mixin" as Mixin;
+@use "../variable" as Variable;
+
+.Login .Button {
+
+    font-size: 1.9rem;
+
+    background-color: Variable.$accent-strong;
+    color: Variable.$lightest;
+
+    &:hover {
+        color: Variable.$accent-strong;
+        background-color: Variable.$lightest;
+    }
+
+    @include Mixin.responsive(sp-tb) {
+        width: 60vw;
+        max-width: 360px;
+        height: 42px;
+
+        margin-left: 25vw;
+        margin-top: 3vh;
+    }
+    
+    @include Mixin.responsive(pc) {
+        width: 40vw;
+        max-width: 360px;
+        height: 42px;
+
+        margin-left: 37vw;
+        margin-top: 5vh;
+    }
+}

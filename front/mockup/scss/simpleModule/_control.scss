@@ -1,0 +1,128 @@
+@use "../mixin" as Mixin;
+@use "../variable" as Variable;
+
+// 制御のために利用するスタイルを管理
+
+.hidden-item {
+	transform: scaleY(0);
+	height: 0;
+}
+
+.hidden-modal {
+	display: none;
+}
+
+.hidden-accordion {
+	display: none;
+}
+
+// レスポンシブ用
+// pc パソコン
+// sp スマートフォン
+// tb タブレット
+// pc-tbの場合、スマートフォンのみ非表示となる
+@include Mixin.responsive(sp) {
+	.tb { display:none !important;}
+	.pc-tb { display:none !important;}
+	.pc { display:none !important;}
+}
+@include Mixin.responsive(tb) {
+	.sp { display:none !important;}
+	.sp-pc { display:none !important;}
+	.pc { display:none !important;}
+}
+@include Mixin.responsive(pc) {
+	.sp { display:none !important;}
+	.tb { display:none !important;}
+	.sp-tb { display:none !important;}
+}
+
+// 読込モジュール
+.Loading {
+	position: absolute;
+	top: 40%;
+	left: 50%;
+	height: 150px;
+	
+	z-index: 99;
+}
+.Loading:before {
+    content: 'Loading...';
+	display: block;
+	
+    position: absolute;
+    top: 50%;
+    left: 50%;
+	transform: translate(-50%, 40px);
+	
+	font-size: 1.8rem;
+}
+.Loading:after {
+    content: '';
+	display: block;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    width: 50px;
+	height: 50px;
+
+    border: 5px solid #000;
+    border-right: 5px solid transparent;
+	border-radius: 50%;
+
+    animation: loading 2s linear infinite;
+}
+@keyframes loading {
+    0% {
+        opacity: .3;
+    }
+    50% {
+        opacity: .9;
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+        opacity: .3;
+    }
+}
+// 画面を覆うオーバーレイ要素
+.LoadingOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+
+	z-index: 9;
+
+	background-color: white;
+	opacity: 0.55;
+}
+
+// エラーメッセージ
+.Error {
+	color: Variable.$error;
+}
+
+.PopupError {
+	position: absolute;
+	top: 10%;
+	left: 40%;
+	
+	font-size: 1.8rem;
+	color: Variable.$error;
+
+	animation-name: popup;
+	animation-duration: 1.8s;
+}
+
+@keyframes popup {
+	0% { opacity: 1.0;}
+	49% {opacity: 1.0;}
+	@for $i from 5 through 10 {
+		#{$i * 10%} {
+			opacity:  1.0 - $i*0.1;
+		}
+	}
+}

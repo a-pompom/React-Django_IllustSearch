@@ -1,0 +1,43 @@
+@use "./variable" as Variable;
+
+//flex-box
+@mixin flex-center {
+	display: flex;
+	justify-content: center;
+}
+
+@mixin flex-right {
+	display: flex;
+	justify-content: flex-end;
+}
+
+@mixin flex-left {
+	display: flex;
+	justify-content: flex-start;
+}
+
+@mixin flex-between {
+	display: flex;
+	justify-content: space-between;
+}
+
+@mixin flex-table {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+// レスポンシブ用
+@mixin responsive($breakpoint: pc) {
+	@media #{map-get(Variable.$breakpoints, $breakpoint)} {
+		@content;
+	}
+}
+
+
+// デバイスが縦長か横長かでレイアウトを作り分ける用
+@mixin for-portrait {
+	@media screen and (orientation: portrait) { @content; }
+}
+@mixin for-landscape {
+	@media screen and (orientation: landscape) { @content; }
+}

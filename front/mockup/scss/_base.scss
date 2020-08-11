@@ -1,0 +1,75 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+	
+  font-size: 90%;	
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+	
+  margin: 0;
+  padding: 0;
+	
+  color: #4d464f;
+  background-color: #BAD7B6;
+
+}
+
+* { box-sizing: border-box;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	margin: 0;
+	padding: 0;
+}
+
+ul {
+	list-style: none;
+}
+
+p {
+  line-height: 1rem;
+}
+
+a {
+	display: block;
+	
+	text-decoration: none;
+	
+	color: #4d464f;
+	
+	&:checked {
+		color: #4d464f;
+	}
+}
+
+// アプリ用
+// inputテキストのデフォルト設定削除
+input[type="text"], input[type="password"] {
+	-webkit-appearance: none;
+	
+    border: 0;
+	
+	&:focus {
+		background: none;
+		outline: none;
+	}
+}
+
+textarea {
+	-webkit-appearance: none;
+	
+    border: 0;
+	resize: none;
+	
+	&:focus {
+		outline: none;
+	}
+}
+
+
+.error {
+	display: block;
+	color: #CB72AA;
+	text-align: center;
+}
