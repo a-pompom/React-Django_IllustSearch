@@ -72,5 +72,34 @@
             border-radius: 50%;
             cursor: pointer;
         }
+
+    }
+    // ユーザ登録→ログイン画面へ戻るためのボタン
+    .Cancel {
+
+        position: absolute;
+        bottom: 5vh;
+        right: 8vw;
+        font-size: 1.9rem;
+
+        background-color: Variable.$reverseAccent;
+        color: Variable.$lightest;
+
+        &:hover {
+            color: Variable.$reverseAccent;
+            background-color: Variable.$lightest;
+        }
+
+        @include Mixin.responsive(sp-tb) {
+            width: 25vw;
+            max-width: 360px;
+            height: 42px;
+        }
+        
+        @include Mixin.responsive(pc) {
+            width: 15vw;
+            max-width: 360px;
+            height: 42px;
+        }
     }
 }
