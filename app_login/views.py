@@ -14,7 +14,7 @@ from common import custom_type
 from common.api_response import APIResponseMixin
 
 
-class LoginView(views.APIView):
+class LoginView(views.APIView, APIResponseMixin):
     """ ログインAPI用View """
 
     def get(self, request: Request) -> Response:
@@ -77,15 +77,15 @@ class LoginView(views.APIView):
             )
 
         # ログイン失敗
-        except LoginFailureException:
+        except LoginFailureException as ex:
 
-            return Response({'message': 'ユーザ名が間違っています。'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(self.render_to_error_response('ログインに失敗しました。', ex.errors), status=status.HTTP_401_UNAUTHORIZED)
 
         # 認証処理で得られたユーザでセッションを発行
         login(request, user, 'app_login.backend.AuthBackend')
 
         # ログイン成功
-        return Response({'message': 'ログイン成功'}, status=status.HTTP_200_OK)
+        return Response(self.render_to_success_response('ログイン成功。'), status=status.HTTP_200_OK)
 
 class SignUpView(views.APIView, APIResponseMixin):
     """ ユーザ登録API用View """
