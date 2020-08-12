@@ -26,6 +26,11 @@ export type GetAPI<GetParameter, GetResponse> = {(param?: GetParameter): Promise
 // APIへのPOSリクエスト関数
 export type PostAPI<Body> = {(body: Body): Promise<PostResponse>}
 
+export interface PostCallbackHandler<Args extends any[]> {
+    handler: {(...args : Args)},
+    args: Args
+}
+
 // 画面上の処理の進行状況
 export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE'
 // 進行状況用コンポーネントのProp

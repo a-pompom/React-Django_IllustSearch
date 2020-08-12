@@ -75,26 +75,18 @@ export const useLogin = (): LoginData.Hook => {
 
         event.preventDefault();
 
-        const action: BaseData.BeforePostAction = {
-            type: 'BEFORE_POST'
-        };
-        dispatch(action);
-
-        /**
-         * POST処理後に実行 ログイン成功の場合はTOP画面へ遷移し、失敗した場合はエラーメッセージを表示
-         */
-        const callbackPost = async () => {
-
-            const response = await emitPost({username: state.loginUsername.value});
-
-            if (response.ok) {
-                handlePostSuccess(history);
-                return;
+        // POST処理実行
+        emitPost(
+            {username: state.loginUsername.value},
+            {
+                handler: handlePostSuccess,
+                args: [history]
+            },
+            {
+                handler: handlePostFailure,
+                args: [dispatch]
             }
-            handlePostFailure(dispatch);
-        }
-
-        callbackPost();
+        );
     };
 
     return {

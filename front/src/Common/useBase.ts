@@ -58,7 +58,7 @@ export const usePostAPI = <Body>(
      * 
      * @param body POSTリクエストボディ
      */
-    const emitPost = async (body: Body): Promise<BaseData.PostResponse> => {
+    const executePost = async (body: Body): Promise<BaseData.PostResponse> => {
 
         const response = await postAPI(body);
 
@@ -72,6 +72,33 @@ export const usePostAPI = <Body>(
         dispatch(action);
 
         return response;
+    }
+    const emitPost = <SuccessHandlerArgs extends any[], FailureHandlerArgs extends any[]>(
+        body: Body,
+        successHandler?: BaseData.PostCallbackHandler<SuccessHandlerArgs>,
+        failureHandler?: BaseData.PostCallbackHandler<FailureHandlerArgs>) => {
+
+        const action: BaseData.BeforePostAction = {
+            type: 'BEFORE_POST'
+        };
+        dispatch(action);
+
+        /**
+         * POST処理後に実行 ログイン成功の場合はTOP画面へ遷移し、失敗した場合はエラーメッセージを表示
+         */
+        const callbackPost = async () => {
+
+            const response = await executePost(body);
+
+            if (response.ok) {
+                successHandler.handler(...successHandler.args);
+                return;
+            }
+            failureHandler.handler(...failureHandler.args);
+        }
+
+        callbackPost();
+
     }
     return emitPost;
 };
