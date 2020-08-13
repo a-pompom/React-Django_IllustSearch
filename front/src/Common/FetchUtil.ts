@@ -10,7 +10,8 @@ import * as BaseData from './BaseData';
 export const get = async <Response>(url: string): Promise<Response> => {
 
     const response = await fetch(url);
-    const responseJSON = await response.json() as Promise<Response>;
+    const responseJSON = await response.json();
+    responseJSON.ok = response.ok;
 
     return responseJSON;
 };

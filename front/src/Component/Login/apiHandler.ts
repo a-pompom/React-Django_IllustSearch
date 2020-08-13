@@ -6,6 +6,7 @@ import { PostResponse } from 'Common/BaseData';
 import { Setting } from 'settings';
 
 import * as LoginData from './loginData';
+import { FetchSuccessAction, IAction } from './reducer';
 
 // APIパス
 const END_POINT = Setting.API_ENDPOINT;
@@ -14,9 +15,9 @@ const LOGIN_PATH = Setting.API_PATH.LOGIN;
 /**
  * APIよりカテゴリの一覧を取得
  */
-export const getUserList = async <GetParameter>(param?: GetParameter): Promise<LoginData.User[]> => {
+export const getUserList = async <GetParameter>(param?: GetParameter): Promise<LoginData.GetResponse> => {
 
-    const response = await FetchUtil.get<LoginData.UserResponse>(`${END_POINT}/${LOGIN_PATH}`);
+    const response = await FetchUtil.get<LoginData.GetResponse>(`${END_POINT}${LOGIN_PATH}`);
 
     // レスポンス→View用オブジェクトへ詰め替え
     const userList = response.users.map((user): LoginData.User => {
@@ -26,8 +27,26 @@ export const getUserList = async <GetParameter>(param?: GetParameter): Promise<L
             iconPath: ''
         };
     });
+    response.users = userList;
 
-    return userList;
+    return response;
+};
+
+/**
+ * APIへのGETリクエスト成功時に実行される処理 ユーザ情報を反映させるためのアクションを発行
+ * 
+ * @param response 
+ * @param dispatch 
+ */
+export const handleGetSuccess = (response: LoginData.GetResponse, dispatch: React.Dispatch<IAction>) => {
+
+    const action: FetchSuccessAction = {
+        type: 'FETCH_SUCCESS',
+        payload: {
+            response: response
+        }
+    };
+    dispatch(action);
 };
 
 /**
@@ -39,7 +58,7 @@ export const getUserList = async <GetParameter>(param?: GetParameter): Promise<L
  */
 export const postLogin = async <Body>(body: Body): Promise<PostResponse> => {
 
-    const response = await FetchUtil.post<Body, PostResponse>(`${END_POINT}/${LOGIN_PATH}`, body);
+    const response = await FetchUtil.post<Body, PostResponse>(`${END_POINT}${LOGIN_PATH}`, body);
 
     return response;
 }

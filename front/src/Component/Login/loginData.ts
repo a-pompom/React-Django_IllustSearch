@@ -7,8 +7,8 @@ export interface User {
     iconPath: string
 }
 // APIからのレスポンス
-export interface UserResponse {
-    users: {username: string}[]
+export interface GetResponse extends BaseData.BaseGetResponse {
+    users: User[]
 }
 // POSTリクエストボディ
 export interface PostBody {

@@ -9,9 +9,15 @@ export interface UsernameChangeAction extends BaseData.BaseAction<'CHANGE_USER'>
         username: string
     }
 }
+// 初期描画アクション
+export interface FetchSuccessAction extends BaseData.BaseAction<'FETCH_SUCCESS'> {
+    payload: {
+        response: LoginData.GetResponse
+    }
+};
 
 // アクションインタフェース
-export type IAction = BaseData.IBaseAction | UsernameChangeAction;
+export type IAction = BaseData.IBaseAction | FetchSuccessAction | UsernameChangeAction;
 
 /**
  * Stateを更新
@@ -26,8 +32,7 @@ export const reducer = (state: LoginData.State, action: IAction): LoginData.Stat
     // 初期描画 APIから取得したユーザをログイン一覧ユーザへ設定
     if (action.type === 'FETCH_SUCCESS'){
 
-        state.users = action.payload.response as LoginData.User[];
-        state.phase.currentPhase = 'IDLE';
+        state.users = action.payload.response.users;
 
         return state;
     }

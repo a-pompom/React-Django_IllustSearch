@@ -14,6 +14,12 @@ export interface ErrorObject {
     message: string
 }
 
+export interface BaseGetResponse {
+    statusCode: StatusCode,
+    ok: boolean,
+    errors?: ErrorObject[]
+}
+
 // POSTレスポンス メッセージとステータスコードを格納
 export interface PostResponse {
     message: string,
@@ -23,6 +29,12 @@ export interface PostResponse {
 }
 // APIへのGETリクエスト関数
 export type GetAPI<GetParameter, GetResponse> = {(param?: GetParameter): Promise<GetResponse>}
+
+export interface GetCallbackHandler<Args extends any[]> {
+    handler: {(response: BaseGetResponse, ...args : Args)},
+    args: Args
+}
+
 // APIへのPOSリクエスト関数
 export type PostAPI<Body> = {(body: Body): Promise<PostResponse>}
 
@@ -32,7 +44,7 @@ export interface PostCallbackHandler<Args extends any[]> {
 }
 
 // 画面上の処理の進行状況
-export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE'
+export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE' | 'FATAL'
 // 進行状況用コンポーネントのProp
 export interface PhaseProps {
     phase: Phase,
@@ -46,15 +58,17 @@ export interface BaseAction<DispatchType> {
     type: DispatchType
 };
 
-// 初期描画アクション
-export interface FetchSuccessAction<Response> extends BaseAction<'FETCH_SUCCESS'> {
-    payload: {
-        response: Response
-    }
-};
 
 // 処理待機中アクション ユーザからのイベントを待機している状態
 export interface IdleAction extends BaseAction<'IDLE'> {}
+
+export interface BeforeGetAction extends BaseAction<'BEFORE_GET'>{}
+
+export interface AfterGetAction extends BaseAction<'SUCCESS_GET'| 'FAILURE_GET'> {
+    payload: {
+        response: BaseGetResponse
+    }
+}
 
 // POST前処理アクション 二重POSTを防止するため、処理フェーズを切り替える
 export interface BeforePostAction extends BaseAction<'BEFORE_POST'>{}
@@ -73,8 +87,8 @@ export interface AddTimerAction extends BaseAction<'ADD_TIMER'> {
 }
 
 // アクションインタフェース
-export type IBaseAction = IdleAction | FetchSuccessAction<unknown> | BeforePostAction | AfterPostAction | AddTimerAction
-export const I_BASE_ACTIONS = ['IDLE', 'BEFORE_POST', 'SUCCESS_POST', 'FAILURE_POST', 'ADD_TIMER'];
+export type IBaseAction = IdleAction | BeforeGetAction | AfterGetAction |  BeforePostAction | AfterPostAction | AddTimerAction
+export const I_BASE_ACTIONS = ['IDLE', 'BEFORE_GET', 'SUCCESS_GET', 'FAILURE_GET', 'BEFORE_POST', 'SUCCESS_POST', 'FAILURE_POST', 'ADD_TIMER'];
     
 // State 
 

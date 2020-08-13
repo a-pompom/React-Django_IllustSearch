@@ -12,12 +12,17 @@ export const reducer = <State extends BaseData.BaseState>(state: State, action: 
             state.phase.currentPhase = 'IDLE';
             return state;
 
+        case 'BEFORE_GET':
+            state.phase.initialize();
+            state.phase.currentPhase = 'LOADING';
+            return state;
+
         case 'BEFORE_POST':
             state.phase.initialize();
             state.phase.currentPhase = 'LOADING';
             return state;
         
-        case 'FETCH_SUCCESS': case 'SUCCESS_POST':
+        case 'SUCCESS_GET': case 'FAILURE_GET': case 'SUCCESS_POST':
             state.phase.currentPhase = 'IDLE';
             return state;
 

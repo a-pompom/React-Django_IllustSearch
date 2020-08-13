@@ -11,33 +11,73 @@ import { reducer as baseReducer } from './reducer';
  * 
  * @param dispatch reducerを呼び出すためのdispatch処理
  * @param getAPI APIリクエストを発行する処理
- * @param getAPIParam APIリクエストへ渡すパラメータ
+ * 
+ * @return GET APIリクエストを発火させるためのトリガー
  */
-export const useGetAPI = <GetResponse, GetParameter=null>(
-    dispatch: React.Dispatch<BaseData.FetchSuccessAction<GetResponse>>, 
-    getAPI: BaseData.GetAPI<GetParameter, GetResponse>,
-    getAPIParam?: GetParameter
+export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIArgs extends any[]= []>(
+    dispatch: React.Dispatch<BaseData.IBaseAction>, 
+    getAPI: BaseData.GetAPI<GetAPIArgs, GetResponse>,
 ) => {
 
-    useEffect(() => {
+    /**
+     * GET APIリクエストを発行
+     * 
+     * @param getAPIArgs GET APIへ渡す引数
+     * 
+     * @return GET レスポンス
+     */
+    const executeGet = async (getAPIArgs: GetAPIArgs) => {
+        const response = await getAPI(...getAPIArgs);
 
-        // GetAPIリクエストを発行
-        const fetchData = async() => {
-
-            const response: GetResponse = await getAPI(getAPIParam);
-
-            // レスポンスをActionを介してStateへ反映
-            const action: BaseData.FetchSuccessAction<GetResponse> = {
-                type: 'FETCH_SUCCESS',
-                payload: {
-                    response: response,
-                }
+        // 処理結果をActionを介してStateへ反映
+        const action: BaseData.AfterGetAction = {
+            type: response.ok ? 'SUCCESS_GET' : 'FAILURE_GET',
+            payload: {
+                response: response
             }
-            dispatch(action);
         };
+        dispatch(action);
 
-        fetchData();
-    }, []);
+        return response;
+    }
+
+    /**
+     * GET APIリクエストを呼び元で発火
+     * 
+     * @param getAPIArgs GET APIリクエストへ渡す引数
+     * @param successHandler リクエスト成功時実行処理
+     * @param failureHandler リクエスト失敗時実行処理
+     */
+    const emitGet = <SuccessHandlerArgs extends any[], FailureHandlerArgs extends any[]>(
+        getAPIArgs?: GetAPIArgs,
+        successHandler?: BaseData.GetCallbackHandler<SuccessHandlerArgs>,
+        failureHandler?: BaseData.GetCallbackHandler<FailureHandlerArgs>) => {
+        
+        // 前処理
+        const action: BaseData.BeforeGetAction = {
+            type: 'BEFORE_GET'
+        };
+        dispatch(action);
+
+        // GETリクエスト発行後のコールバック処理
+        const callbackGet = async () => {
+
+            const response: GetResponse = await executeGet(getAPIArgs);
+
+            // 成功
+            if (response.ok && successHandler) {
+                successHandler.handler(response, ...successHandler.args);
+                return;
+            }
+            // 失敗
+            if (failureHandler) {
+                failureHandler.handler(response, ...failureHandler.args);
+            }
+        }
+
+        callbackGet();
+    }
+    return emitGet;
 }
 
 /**
@@ -90,15 +130,15 @@ export const usePostAPI = <Body>(
 
             const response = await executePost(body);
 
-            if (response.ok) {
+            if (response.ok && successHandler) {
                 successHandler.handler(...successHandler.args);
                 return;
             }
-            failureHandler.handler(...failureHandler.args);
+            if (failureHandler) {
+                failureHandler.handler(...failureHandler.args);
+            }
         }
-
         callbackPost();
-
     }
     return emitPost;
 };
