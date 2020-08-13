@@ -1,4 +1,6 @@
+from django.db.models.base import ModelBase
 import re
+from typing import Dict, Any
 
 def is_valid_min_length(value: str, length: int) -> bool:
     """ 最小文字数チェック
@@ -54,3 +56,21 @@ def is_valid_alpha_numeric(value: str) -> bool:
     """    
 
     return re.search('^[0-9a-zA-Z-_]+$', value) is not None
+
+def is_unique_model(model: 'ModelBase', filter_query: Dict[str, Any]):
+    """ 対象の条件で得られるモデル要素が既に存在するか検証
+
+    Parameters
+    ----------
+    model : ModelBase
+        検証対象モデル クエリマネージャを介してレコードを取得するために利用
+    filter_query : Dict[str, Any]
+        モデルを絞り込むクエリ
+
+    Returns
+    -------
+    bool
+        True-> ユニーク False-> 既にDB内に存在
+    """
+
+    return not getattr(model, 'objects').filter(**filter_query).exists()

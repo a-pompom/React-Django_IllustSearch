@@ -5,7 +5,7 @@ from .custom_type import TypeSerializerErrorDict, TypePostErrorDict, TypePostAPI
 
 class APIResponseMixin:
     """ 
-    Reactで処理しやすいレスポンスへ整形するためのミックスイン 
+    Reactで処理しやすいレスポンスへ整形するためのミックスイン
         シリアライザへ格納されたエラーメッセージをもとに、エラーオブジェクトへ整形
     """
 

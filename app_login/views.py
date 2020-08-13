@@ -1,4 +1,7 @@
+from rest_framework.exceptions import ErrorDetail
+from common.custom_type import TypeSerializerErrorDict
 from django.contrib.auth import login
+from django.db import models
 from typing import cast
 
 from rest_framework import status, views
@@ -10,7 +13,8 @@ from .exception import LoginFailureException
 from .models import User
 from .serializer import LoginSerializer, SignupSerializer
 
-from common import custom_type
+from common import custom_type, validator
+from common.validator import is_unique_model
 from common.api_response import APIResponseMixin
 
 
@@ -120,3 +124,33 @@ class SignUpView(views.APIView, APIResponseMixin):
         # 登録成功
         response = self.render_to_success_response('登録しました。')
         return Response(response, status=status.HTTP_200_OK)
+
+class UserValidateUniqueView(views.APIView, APIResponseMixin):
+    """ ユーザがユニークかフロントからのリクエストで検証するためのView """
+
+    def post(self, request: Request) -> Response:
+        """ ユーザがユニークか検証
+
+        Parameters
+        ----------
+        request : Request
+            検証対象ユーザ名を格納したリクエスト
+
+        Returns
+        -------
+        Response
+            ユニーク-> OKレスポンス ユニークでない-> ユーザ名フィールドへエラーメッセージを詰め込んだレスポンス
+        """
+
+        username = request.data['username']
+
+        # ユニーク
+        if is_unique_model(User, {'username': username}):
+            return Response(self.render_to_success_response('OK'), status=status.HTTP_200_OK)
+
+        # ユニークでない
+        error_response: TypeSerializerErrorDict = {
+            'username': [ErrorDetail('ユーザ名は既に使用されています。')]
+        }
+
+        return Response(self.render_to_error_response('error', error_response), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
