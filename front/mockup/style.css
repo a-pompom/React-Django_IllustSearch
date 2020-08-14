@@ -359,5 +359,21 @@ textarea:focus {
     height: 42px;
   }
 }
+.Login .Error {
+  display: block;
+  font-size: 1.2rem;
+}
+@media screen and (max-width: 959px) {
+  .Login .Error {
+    margin-left: 25vw;
+    margin-top: 1.5vh;
+  }
+}
+@media screen and (min-width: 959px) {
+  .Login .Error {
+    margin-left: 37vw;
+    margin-top: 1.5vh;
+  }
+}
 
 /*# sourceMappingURL=style.css.map */
