@@ -70,7 +70,7 @@ export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIAr
                 return;
             }
             // 失敗
-            if (failureHandler) {
+            if (! response.ok && failureHandler) {
                 failureHandler.handler(response, ...failureHandler.args);
             }
         }
@@ -98,9 +98,9 @@ export const usePostAPI = <Body>(
      * 
      * @param body POSTリクエストボディ
      */
-    const executePost = async (body: Body): Promise<BaseData.PostResponse> => {
+    const executePost = async (body: Body, path?: string): Promise<BaseData.PostResponse> => {
 
-        const response = await postAPI(body);
+        const response = await postAPI(body, path);
 
         // 処理結果をActionを介してStateへ反映
         const action: BaseData.AfterPostAction = {
@@ -113,11 +113,22 @@ export const usePostAPI = <Body>(
 
         return response;
     }
+
+    /**
+     * 呼び出し元からPOST処理を発火
+     * @param body POSTリクエストボディ
+     * @param path POST APIエンドポイント
+     * @param successHandler POST成功処理
+     * @param failureHandler POST失敗処理
+     */
     const emitPost = <SuccessHandlerArgs extends any[], FailureHandlerArgs extends any[]>(
         body: Body,
+        path?: string,
         successHandler?: BaseData.PostCallbackHandler<SuccessHandlerArgs>,
-        failureHandler?: BaseData.PostCallbackHandler<FailureHandlerArgs>) => {
+        failureHandler?: BaseData.PostCallbackHandler<FailureHandlerArgs>
+    ) => {
 
+        // POST前処理
         const action: BaseData.BeforePostAction = {
             type: 'BEFORE_POST'
         };
@@ -128,14 +139,16 @@ export const usePostAPI = <Body>(
          */
         const callbackPost = async () => {
 
-            const response = await executePost(body);
+            const response = await executePost(body, path);
 
+            // 成功
             if (response.ok && successHandler) {
-                successHandler.handler(...successHandler.args);
+                successHandler.handler(response, ...successHandler.args);
                 return;
             }
-            if (failureHandler) {
-                failureHandler.handler(...failureHandler.args);
+            // 失敗
+            if (! response.ok && failureHandler) {
+                failureHandler.handler(response, ...failureHandler.args);
             }
         }
         callbackPost();

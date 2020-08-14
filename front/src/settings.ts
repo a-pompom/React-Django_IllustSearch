@@ -5,12 +5,13 @@ export const Setting = {
     // 各APIへのパス
     API_PATH: {
         LOGIN: 'login/',
-        SIGNUP: 'login/signup/'
+        SIGNUP: 'login/signup/',
+        VALIDATE_UNIQUE_USER: 'login/validate/user',
     },
 
     // 画面コンポーネントへのパス
     VIEW_PATH: {
         LOGIN: '/',
-        SIGNUP: '/signup/'
+        SIGNUP: '/signup/',
     },
 }

@@ -36,10 +36,10 @@ export interface GetCallbackHandler<Args extends any[]> {
 }
 
 // APIへのPOSリクエスト関数
-export type PostAPI<Body> = {(body: Body): Promise<PostResponse>}
+export type PostAPI<Body> = {(body: Body, path?: string): Promise<PostResponse>}
 
 export interface PostCallbackHandler<Args extends any[]> {
-    handler: {(...args : Args)},
+    handler: {(response: PostResponse, ...args : Args)},
     args: Args
 }
 
@@ -95,5 +95,11 @@ export const I_BASE_ACTIONS = ['IDLE', 'BEFORE_GET', 'SUCCESS_GET', 'FAILURE_GET
 export interface BaseState {
     phase: PhaseClass
 }
+
+// エラーメッセージ表示用コンポーネント
+export interface ErrorProps {
+    errors: string[]
+}
+
 // HTMLの入力フィールドの値がとりうる型
 export type BaseValue = string;
