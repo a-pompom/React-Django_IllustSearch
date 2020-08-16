@@ -25,8 +25,10 @@ export const Form: React.FC<SignupData.FormProps> = ({
                     id="username"
                     className="Input"
 
+                    name={username.name}
                     placeholder={username.label}
                     defaultValue={username.value}
+                    
                     onBlur={changeUsernameEvent}
                 />
                 {username.errors.length === 0 ? null : 

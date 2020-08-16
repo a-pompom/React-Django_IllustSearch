@@ -13,11 +13,11 @@ export interface PostBody {
 
 // State要素・イベントハンドラ
 
-export type FieldNameUser = 'username';
+export type FieldName = 'username';
 // ユーザ登録処理のフィールドの値型
-export type SignupValue = string;
+export type Value = string;
 // ユーザ名フィールド
-export type UsernameField<FieldType, FieldName extends FieldNameUser> = Field<FieldType, FieldName>
+export type UsernameField<UsernameValue extends Value, UsernameFieldName extends FieldName> = Field<UsernameValue, UsernameFieldName>
 
 // ユーザ名変更イベント
 export type ChangeUsernameEvent = {(event: React.ChangeEvent<HTMLInputElement>): void}
@@ -27,8 +27,8 @@ export type CreateUserEvent = {(event: React.MouseEvent<HTMLButtonElement>): voi
 export type ChangeViewEvent = {(event: React.MouseEvent<HTMLElement>)}
 
 // 画面で管理する状態
-export interface State extends BaseData.BaseState{
-    username: UsernameField<string, 'username'>,
+export interface State extends BaseData.BaseState {
+    username: UsernameField<string, 'username'>
 }
 
 // Hook 状態・イベントハンドラを管理
@@ -36,29 +36,12 @@ export interface Hook {
     state: State,
     
     changeUsernameEvent: ChangeUsernameEvent,
-    changeViewEvent: ChangeViewEvent,
     createUserEvent: CreateUserEvent,
-}
-
-// ユーザ名変更アクション
-export interface UsernameChangeAction extends BaseData.BaseAction<'CHANGE_USER'> {
-    type: 'CHANGE_USER',
-    paylodad: {
-        username: string
-    }
-}
-
-// ユーザ名重複アクション
-export interface UserDuplicateAction extends BaseData.BaseAction<'DUPLICATE_USER'> {
-    type: 'DUPLICATE_USER',
-    payload: {
-        errorMessage: string
-    }
-
+    changeViewEvent: ChangeViewEvent,
 }
 
 // アクションインタフェース
-export type IAction =  BaseData.IBaseAction | UsernameChangeAction | UserDuplicateAction;
+export type IAction =  BaseData.IBaseAction;
 
 
 // Component

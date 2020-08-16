@@ -10,18 +10,5 @@ import * as SignupData from './signupData';
  */
 export const reducer = (state: SignupData.State, action: SignupData.IAction): SignupData.State => {
 
-    // ユーザ名変更 ユーザ名をStateへ格納
-    if (action.type === 'CHANGE_USER') {
-
-        state.username.errors = [];
-        state.username.value = action.paylodad.username;
-    }
-
-    // ユーザ名重複 エラーメッセージをユーザ名フィールドへ追加
-    if (action.type === 'DUPLICATE_USER') {
-
-        state.username.errors.push(action.payload.errorMessage);
-    }
-
     return state;
 };

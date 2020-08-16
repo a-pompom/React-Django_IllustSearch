@@ -111,6 +111,9 @@ class SignUpView(views.APIView, APIResponseMixin):
 
         # 登録失敗
         if not serializer.is_valid():
+            print('not valid...')
+            print(serializer.data)
+            print(serializer.errors)
             response = self.render_to_error_response('登録に失敗しました。', cast(custom_type.TypeSerializerErrorDict, serializer.errors))
 
             return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)

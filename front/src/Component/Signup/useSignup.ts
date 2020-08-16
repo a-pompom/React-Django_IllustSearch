@@ -7,9 +7,10 @@ import { Phase } from 'Common/Phase';
 import * as BaseHook from 'Common/useBase';
 import { Setting } from 'settings';
 
-import { postUserCreate, handleValidateUniqueUserFailure } from './apiHandler';
+import { handleValidateUniqueUserFailure, handleSuccessUserCreate } from './apiHandler';
 import * as SignupData from './signupData';
 import { reducer } from './reducer';
+import { executeValidate } from './validator';
 
 /**
  * ユーザ登録処理用フック
@@ -28,19 +29,40 @@ export const useSignup = (): SignupData.Hook => {
     const [state, dispatch] = useReducer(reducerWrapper, initialState);
 
     // POST処理
-    const emitPost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, postUserCreate);
+    const emitPost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, BaseAPIHandler.post);
     const emitUserUniquePost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, BaseAPIHandler.post);
+
+    const {validate, isValid} = BaseHook.useValidation<SignupData.State, SignupData.Value, SignupData.FieldName>(
+        executeValidate,
+        ['username'],
+        dispatch
+    );
 
     const history = useHistory();
 
+    // イベントハンドラ
     /**
-     * 画面表示切り替えイベント ログイン画面へ切り替え
+     * ユーザ名変更イベント 重複チェックを実行
      * 
      * @param event イベントオブジェクト
      */
-    const changeViewEvent = (event: React.MouseEvent<HTMLElement>) => {
+    const changeUsernameEvent: SignupData.ChangeUsernameEvent = (event) => {
 
-        history.push(Setting.VIEW_PATH.LOGIN);
+        const fieldName = event.target.name as SignupData.FieldName;
+
+        if (! validate(state, fieldName, event.target.value)) {
+            return;
+        }
+
+        // 重複チェック 重複している場合はエラーメッセージを表示
+        emitUserUniquePost(
+            {username: event.target.value}, 
+            Setting.API_PATH.VALIDATE_UNIQUE_USER,
+            null,
+            {
+                handler: handleValidateUniqueUserFailure,
+                args: [fieldName, dispatch]
+            });
     }
 
     /**
@@ -51,40 +73,37 @@ export const useSignup = (): SignupData.Hook => {
     const createUserEvent: SignupData.CreateUserEvent = (event) => {
 
         event.preventDefault();
-    }
 
+        if (! isValid(state)) {
+            return;
+        }
+
+        emitPost(
+            {username: state.username.value},
+            Setting.API_PATH.SIGNUP,
+            {
+                handler: handleSuccessUserCreate,
+                args: [history]
+            }
+        );
+    }
+    
     /**
-     * ユーザ名変更イベント 重複チェックを実行
+     * 画面表示切り替えイベント ログイン画面へ切り替え
      * 
      * @param event イベントオブジェクト
      */
-    const changeUsernameEvent: SignupData.ChangeUsernameEvent = (event) => {
+    const changeViewEvent = (event: React.MouseEvent<HTMLElement>) => {
 
-        // 入力値をStateへ反映し、エラーを初期化
-        const action: SignupData.UsernameChangeAction = {
-            type: 'CHANGE_USER',
-            paylodad: {
-                username: event.target.value
-            }
-        }
-        dispatch(action);
-
-        // 重複チェック 重複している場合はエラーメッセージを表示
-        emitUserUniquePost(
-            {username: event.target.value}, 
-            Setting.API_PATH.VALIDATE_UNIQUE_USER,
-            null,
-            {
-                handler: handleValidateUniqueUserFailure,
-                args: [dispatch]
-            });
+        history.push(Setting.VIEW_PATH.LOGIN);
     }
+
 
     return {
         state,
 
         changeUsernameEvent,
+        createUserEvent,
         changeViewEvent,
-        createUserEvent
     };
 };

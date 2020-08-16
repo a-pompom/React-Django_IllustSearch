@@ -32,7 +32,7 @@ def clean_username(value_dict: Dict[str, str]) -> str:
         )
 
     # ユニーク
-    if validator.is_unique_model(User, {'username': value}):
+    if not validator.is_unique_model(User, {'username': value}):
         raise ValidationError(
             {
                 'username': f'ユーザ名はすでに使用されています。'

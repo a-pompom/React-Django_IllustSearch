@@ -11,8 +11,8 @@ import { Form } from './ViewComponent';
 export const SignupView: React.FC<SignupData.Hook> = ({
     state,
     changeUsernameEvent,
+    createUserEvent,
     changeViewEvent,
-    createUserEvent
 }) => {
 
     return (

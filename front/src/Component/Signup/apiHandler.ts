@@ -1,3 +1,5 @@
+import * as H from 'history';
+
 import * as BaseData from 'Common/BaseData';
 import * as FetchUtil from 'Common/FetchUtil';
 import { PostResponse } from 'Common/BaseData';
@@ -17,21 +19,39 @@ const LOGIN_PATH = Setting.API_PATH.LOGIN;
  */
 export const handleValidateUniqueUserFailure = (
     response: BaseData.PostResponse,
+    fieldName: SignupData.FieldName,
     dispatch: React.Dispatch<SignupData.IAction>
 ) => {
 
     // 今回はユーザ名のみ利用するので、決め打ち
-    const errorMessage = response.errors[0].message;
 
-    const action: SignupData.UserDuplicateAction = {
-        type: 'DUPLICATE_USER',
+    const action: BaseData.AfterValidationAction<SignupData.Value, SignupData.FieldName> = {
+        type: 'AFTER_VALIDATION',
         payload: {
-            errorMessage
+            results: [{
+                isValid: false,
+                fieldName,
+                fieldValue: null,
+                errors: [response.errors[0].message]
+            }]
         }
     };
 
     dispatch(action);
 };
+
+/**
+ * ユーザ登録成功ハンドラ ログイン画面へ遷移
+ * 
+ * @param response 処理結果
+ * @param history View変更用のHistoryAPI
+ */
+export const handleSuccessUserCreate = (
+    response: BaseData.PostResponse,
+    history: H.History<{}>
+) => {
+    history.push(Setting.VIEW_PATH.LOGIN);
+}
 
 /**
  * ログインAPIでログイン処理を実行
