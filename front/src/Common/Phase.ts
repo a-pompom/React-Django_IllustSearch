@@ -41,5 +41,7 @@ export class Phase {
 
             clearTimeout(timer);
         });
+
+        this._activeTimers = [];
     }
 }
