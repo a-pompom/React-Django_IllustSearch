@@ -25,6 +25,7 @@ export const useSignup = (): SignupData.Hook => {
         phase: new Phase('IDLE')
     };
 
+    // reducer
     const reducerWrapper = BaseHook.useBaseReducer<SignupData.State, SignupData.IAction>(reducer);
     const [state, dispatch] = useReducer(reducerWrapper, initialState);
 
@@ -32,9 +33,10 @@ export const useSignup = (): SignupData.Hook => {
     const emitPost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, BaseAPIHandler.post);
     const emitUserUniquePost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, BaseAPIHandler.post);
 
-    const {validate, isValid} = BaseHook.useValidation<SignupData.State, SignupData.Value, SignupData.FieldName>(
+    // バリデーション
+    const {validate, isValid} = BaseHook.useValidation<SignupData.State, SignupData.FieldName, SignupData.Value>(
         executeValidate,
-        ['username'],
+        [state.username.name],
         dispatch
     );
 

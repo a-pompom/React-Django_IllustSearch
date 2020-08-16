@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { PhaseView } from 'Common/ViewPhase';
+import { PhaseView } from 'Common/Views/ViewPhase';
 
 import { useLogin } from'./useLogin';
 import * as LoginData from './loginData';
@@ -20,12 +20,12 @@ export const LoginView: React.FC<LoginData.Hook> = ({
 
     return (
         <React.Fragment>
-            <PhaseView
-                phase={state.phase.currentPhase}
-                message={state.phase.message}
-            />
-
             <div className="Login">
+
+                <PhaseView
+                    phase={state.phase.currentPhase}
+                    message={state.phase.message}
+                />
         
                 <header className="Header">
                     
@@ -35,7 +35,7 @@ export const LoginView: React.FC<LoginData.Hook> = ({
 
                 {/* ユーザ情報入力フォーム */}
                 <Form 
-                    loginUsername={state.loginUsername}
+                    username={state.username}
 
                     changeUsername={changeUsername}
                     loginEvent={loginEvent}

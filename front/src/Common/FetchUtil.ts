@@ -1,5 +1,3 @@
-import * as BaseData from './BaseData';
-
 /**
  * APIからリソースを取得
  * 

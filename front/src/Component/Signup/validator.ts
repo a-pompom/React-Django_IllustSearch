@@ -10,16 +10,15 @@ import * as SignupData from './signupData';
  */
 export const executeValidate = (
     state: SignupData.State,
-    field: Field<SignupData.Value, SignupData.FieldName>,
+    field: Field<SignupData.FieldName, SignupData.Value>,
     value: SignupData.Value
-): BaseData.ValidationResult<SignupData.Value, SignupData.FieldName>[] => {
+): BaseData.ValidationResult<SignupData.FieldName, SignupData.Value>[] => {
 
     const results = [];
 
-    // ユーザ名 [文字種別チェック]
+    // ユーザ名
     if (field.name === 'username') {
         field.value = value;
-
         field.errors = [];
 
         results.push(field.getValidationResult());

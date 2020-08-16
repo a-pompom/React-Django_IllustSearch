@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { cloneDeep } from 'lodash';
 
 import * as BaseData from './BaseData';
@@ -51,7 +51,8 @@ export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIAr
     const emitGet = <SuccessHandlerArgs extends any[], FailureHandlerArgs extends any[]>(
         getAPIArgs?: GetAPIArgs,
         successHandler?: BaseData.GetCallbackHandler<SuccessHandlerArgs>,
-        failureHandler?: BaseData.GetCallbackHandler<FailureHandlerArgs>) => {
+        failureHandler?: BaseData.GetCallbackHandler<FailureHandlerArgs>
+    ) => {
         
         // 前処理
         const action: BaseData.BeforeGetAction = {
@@ -72,6 +73,7 @@ export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIAr
             // 失敗
             if (! response.ok && failureHandler) {
                 failureHandler.handler(response, ...failureHandler.args);
+                return;
             }
         }
 
@@ -135,7 +137,7 @@ export const usePostAPI = <Body>(
         dispatch(action);
 
         /**
-         * POST処理後に実行 ログイン成功の場合はTOP画面へ遷移し、失敗した場合はエラーメッセージを表示
+         * POST処理後に実行 成否に応じてハンドラを実行
          */
         const callbackPost = async () => {
 
@@ -149,6 +151,7 @@ export const usePostAPI = <Body>(
             // 失敗
             if (! response.ok && failureHandler) {
                 failureHandler.handler(response, ...failureHandler.args);
+                return;
             }
         }
         callbackPost();
@@ -161,8 +164,8 @@ export const usePostAPI = <Body>(
  * @param validate バリデーション処理
  * @param isValid 全体をバリデーションし、リクエストを発行しても良い状態か評価する処理
  */
-interface ValidationHook<State, FieldName, Value> {
-    validate: {(state: State, fieldname: FieldName, fieldValue: Value)},
+interface ValidationHook<State, FieldNames, Values> {
+    validate: {(state: State, fieldname: FieldNames, fieldValue: Values): boolean},
     isValid: {(state: State): boolean}
 }
 
@@ -173,10 +176,11 @@ interface ValidationHook<State, FieldName, Value> {
  * @param validationRequiredfields バリデーションが必要なフィールド名文字列 isValid処理の検証対象となる
  * @return ValidationHook
  */
-export const useValidation = <State, FieldName extends string, Value>(
-    executeValidate: {(state: State, field: Field<Value, FieldName>, value: Value): void},
-    validationRequiredfields: FieldName[]
-): ValidationHook<State, FieldName, Value> => {
+export const useValidation = <State, FieldNames extends string, Values >(
+    executeValidate: {(state: State, field: Field<FieldNames, Values>, value: Values): BaseData.ValidationResult<FieldNames, Values>[]},
+    validationRequiredfields: FieldNames[],
+    dispatch: React.Dispatch<BaseData.IBaseAction>
+): ValidationHook<State, FieldNames, Values> => {
     /**
      * バリデーション処理
      * 固有のバリデーション処理を汎用的に呼び出せるよう前処理として型を整形
@@ -184,13 +188,25 @@ export const useValidation = <State, FieldName extends string, Value>(
      * @param state 更新対象の状態
      * @param fieldName バリデーション対象の種類
      * @param fieldValue バリデーション対象値
+     * 
+     * @returns エラーあり-> false, エラーなし-> true
      */
-    const validate = (state: State, fieldName: FieldName, fieldValue: Value): void => {
+    const validate = (state: State, fieldName: FieldNames, fieldValue: Values): boolean => {
 
         // エラーを詰め込み、State内のフィールド値を更新するためのField要素をname属性をもとに取得
-        const field = getPropertyByKeyString<State>(state, fieldName) as Field<Value, FieldName>;
+        const field = cloneDeep(getPropertyByKeyString<State>(state, fieldName) as Field<FieldNames, Values>);
 
-        executeValidate(state, field, fieldValue);
+        const results = executeValidate(state, field, fieldValue);
+        const action: BaseData.AfterValidationAction<FieldNames, Values> = {
+            type: 'AFTER_VALIDATION',
+            payload: {
+                results: results
+            }
+        }
+        dispatch(action);
+
+        const isValid = results.filter(result => ! result.isValid).length === 0;
+        return isValid;
     }
 
     /**
@@ -201,18 +217,41 @@ export const useValidation = <State, FieldName extends string, Value>(
     const isValid = (state: State): boolean => {
 
         let isValid = true;
+        const validationResults = [];
 
         // 検証が必要なフィールド名をもとにvalidate処理と同様の処理を実行
         validationRequiredfields.forEach((fieldName) => {
 
-            const field = getPropertyByKeyString<State>(state, fieldName) as Field<Value, FieldName>;
-            executeValidate(state, field, field.value);
+            const field = cloneDeep(getPropertyByKeyString<State>(state, fieldName) as Field<FieldNames, Values>);
 
-            // 検証対象に一つでもエラーがあれば妥当ではない
+            // 既にエラーがある場合は妥当となることはないので、検証不要
             if (field.errors.length !== 0) {
                 isValid = false;
+                return;
             }
+
+            const results = executeValidate(state, field, field.value);
+            const hasError = results.filter(result => ! result.isValid).length !== 0;
+
+            // 検証対象に一つでもエラーがあれば妥当ではない
+            if (hasError) {
+                isValid = false;
+            }
+            validationResults.concat(results);
         });
+
+        if (isValid) {
+            return isValid;
+        }
+
+        // isValid処理はPOST直前に呼ばれることを想定しているので、値の更新は必要ない エラーメッセージを追加する場合のみdispatch
+        const action: BaseData.AfterValidationAction<FieldNames, Values> = {
+            type: 'AFTER_VALIDATION',
+            payload: {
+                results: validationResults
+            }
+        }
+        dispatch(action);
 
         return isValid;
     };

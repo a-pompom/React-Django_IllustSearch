@@ -1,7 +1,6 @@
 import { Phase as PhaseClass } from './Phase';
 
 // API
-
 type StatusOK = 200
 type StatusRedirect = 301 | 302 | 303
 type StatusClientError = 400 | 401 | 403 | 404 | 405
@@ -14,6 +13,7 @@ export interface ErrorObject {
     message: string
 }
 
+// GETレスポンス
 export interface BaseGetResponse {
     statusCode: StatusCode,
     ok: boolean,
@@ -27,6 +27,7 @@ export interface PostResponse {
     ok: boolean,
     errors?: ErrorObject[]
 }
+
 // APIへのGETリクエスト関数
 export type GetAPI<GetParameter, GetResponse> = {(param?: GetParameter): Promise<GetResponse>}
 
@@ -62,8 +63,8 @@ export interface BaseAction<DispatchType> {
 // 処理待機中アクション ユーザからのイベントを待機している状態
 export interface IdleAction extends BaseAction<'IDLE'> {}
 
+// GET前後処理アクション
 export interface BeforeGetAction extends BaseAction<'BEFORE_GET'>{}
-
 export interface AfterGetAction extends BaseAction<'SUCCESS_GET'| 'FAILURE_GET'> {
     payload: {
         response: BaseGetResponse
@@ -79,6 +80,20 @@ export interface AfterPostAction extends BaseAction<'SUCCESS_POST' | 'FAILURE_PO
     }
 }
 
+// バリデーション後処理アクション ユーザの入力値やエラーメッセージをStateへ反映
+export interface AfterValidationAction<FieldNames, Values> extends BaseAction<'AFTER_VALIDATION'> {
+    payload: {
+        results: ValidationResult<FieldNames, Values>[]
+    }
+}
+// バリデーション結果 ネストしたフィールド要素も更新できるよう、name要素・値・エラーを個別に保持
+export interface ValidationResult<FieldName, Value> {
+    isValid: boolean,
+    fieldName: FieldName,
+    fieldValue: Value
+    errors: string[]
+}
+
 // ディレイタイマー追加アクション 各Phaseでディレイ表示が必要な要素を管理するために利用
 export interface AddTimerAction extends BaseAction<'ADD_TIMER'> {
     payload: {
@@ -87,8 +102,12 @@ export interface AddTimerAction extends BaseAction<'ADD_TIMER'> {
 }
 
 // アクションインタフェース
-export type IBaseAction = IdleAction | BeforeGetAction | AfterGetAction |  BeforePostAction | AfterPostAction | AddTimerAction
-export const I_BASE_ACTIONS = ['IDLE', 'BEFORE_GET', 'SUCCESS_GET', 'FAILURE_GET', 'BEFORE_POST', 'SUCCESS_POST', 'FAILURE_POST', 'ADD_TIMER'];
+export type IBaseAction = 
+    IdleAction | 
+    AfterValidationAction<string, unknown> | 
+    BeforeGetAction | AfterGetAction |  BeforePostAction | AfterPostAction | 
+    AddTimerAction
+export const I_BASE_ACTIONS = ['IDLE', 'AFTER_VALIDATION', 'BEFORE_GET', 'SUCCESS_GET', 'FAILURE_GET', 'BEFORE_POST', 'SUCCESS_POST', 'FAILURE_POST', 'ADD_TIMER'];
     
 // State 
 
@@ -100,6 +119,3 @@ export interface BaseState {
 export interface ErrorProps {
     errors: string[]
 }
-
-// HTMLの入力フィールドの値がとりうる型
-export type BaseValue = string;

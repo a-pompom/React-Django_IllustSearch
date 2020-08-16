@@ -8,7 +8,7 @@ import * as LoginData from './loginData';
  *     画面の入力値をログインユーザ名として保持し、ボタンクリックでログイン
  */
 export const Form: React.FC<LoginData.FormProps> = ({
-    loginUsername,
+    username,
     changeUsername,
     loginEvent,
 }) => {
@@ -24,9 +24,9 @@ export const Form: React.FC<LoginData.FormProps> = ({
                     id="username"
                     className="Input"
 
-                    name={loginUsername.name}
-                    placeholder={loginUsername.label}
-                    defaultValue={loginUsername.value}
+                    name={username.name}
+                    placeholder={username.label}
+                    defaultValue={username.value}
                     onBlur={changeUsername}
                 />
 

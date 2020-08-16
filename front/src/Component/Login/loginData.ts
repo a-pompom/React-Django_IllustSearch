@@ -17,11 +17,11 @@ export interface PostBody {
 
 // State要素・イベントハンドラ
 
-export type LoginFieldName = 'loginUsername';
+export type FieldName = 'username';
 // ログイン処理のフィールドの値型
-export type LoginValue = string;
+export type Value = string;
 // ログインユーザ名フィールド
-export type LoginUsername<FieldType, FieldName extends LoginFieldName> = Field<FieldType, FieldName>
+export type UsernameField<UsernameFieldName extends FieldName, UsernameValue extends Value> = Field<UsernameFieldName, UsernameValue>
 
 // ユーザ名変更イベント
 export type ChangeUsername = {(event: React.ChangeEvent<HTMLInputElement>): void}
@@ -31,9 +31,9 @@ export type LoginEvent = {(event: React.MouseEvent<HTMLButtonElement>): void}
 export type ChangeViewEvent = {(event: React.MouseEvent<HTMLElement>)}
 
 // 画面で管理する状態
-export interface State extends BaseData.BaseState{
-    users: User[],
-    loginUsername: LoginUsername<string, 'loginUsername'>,
+export interface State extends BaseData.BaseState {
+    username: UsernameField<'username', string>
+    users: User[]
 }
 
 // Hook 状態・イベントハンドラを管理
@@ -45,10 +45,27 @@ export interface Hook {
     loginEvent: LoginEvent,
 }
 
+// ユーザ名変更アクション
+export interface UsernameChangeAction extends BaseData.BaseAction<'CHANGE_USER'> {
+    type: 'CHANGE_USER',
+    paylodad: {
+        username: string
+    }
+}
+// 初期描画アクション
+export interface FetchSuccessAction extends BaseData.BaseAction<'FETCH_SUCCESS'> {
+    payload: {
+        response: GetResponse
+    }
+};
+
+// アクションインタフェース
+export type IAction = BaseData.IBaseAction | FetchSuccessAction | UsernameChangeAction;
+
 // Component
 // 入力Form Component
 export interface FormProps {
-    loginUsername: LoginUsername<string, 'loginUsername'>,
+    username: UsernameField<'username', string>
 
     changeUsername: ChangeUsername,
     loginEvent: LoginEvent,

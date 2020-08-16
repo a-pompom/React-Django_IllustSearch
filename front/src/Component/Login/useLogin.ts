@@ -8,7 +8,7 @@ import { Setting } from 'settings';
 
 import { getUserList, postLogin, handleGetSuccess, handlePostSuccess, handlePostFailure } from './apiHandler';
 import * as LoginData from './loginData';
-import { reducer, UsernameChangeAction, IAction } from './reducer';
+import { reducer } from './reducer';
 
 /**
  * ログイン処理用フック
@@ -24,11 +24,11 @@ export const useLogin = (): LoginData.Hook => {
     // 画面表示時の初期状態
     const initialState: LoginData.State = {
         users: [],
-        loginUsername: new Field('loginUsername', '', 'ユーザ名'),
+        username: new Field('username', '', 'ユーザ名'),
         phase: new Phase('INIT')
     };
 
-    const reducerWrapper = BaseHook.useBaseReducer<LoginData.State, IAction>(reducer);
+    const reducerWrapper = BaseHook.useBaseReducer<LoginData.State, LoginData.IAction>(reducer);
     const [state, dispatch] = useReducer(reducerWrapper, initialState);
 
     // 画面表示 ログインユーザ一覧を取得
@@ -55,7 +55,7 @@ export const useLogin = (): LoginData.Hook => {
      */
     const changeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
 
-        const action: UsernameChangeAction = {
+        const action: LoginData.UsernameChangeAction = {
             type: 'CHANGE_USER',
             paylodad: {
                 username: event.target.value
@@ -63,16 +63,6 @@ export const useLogin = (): LoginData.Hook => {
         };
         dispatch(action);
     };
-
-    /**
-     * 画面表示切り替えイベント ユーザ登録画面へ切り替え
-     * 
-     * @param event イベントオブジェクト
-     */
-    const changeViewEvent = (event: React.MouseEvent<HTMLElement>) => {
-
-        history.push(Setting.VIEW_PATH.SIGNUP);
-    }
 
     /**
      * ログインイベント APIリクエストで認証に成功したらトップ画面へ遷移
@@ -85,7 +75,8 @@ export const useLogin = (): LoginData.Hook => {
 
         // POST処理実行
         emitPost(
-            {username: state.loginUsername.value},
+            {username: state.username.value},
+            null,
             {
                 handler: handlePostSuccess,
                 args: [history]
@@ -96,6 +87,17 @@ export const useLogin = (): LoginData.Hook => {
             }
         );
     };
+    
+    /**
+     * 画面表示切り替えイベント ユーザ登録画面へ切り替え
+     * 
+     * @param event イベントオブジェクト
+     */
+    const changeViewEvent = (event: React.MouseEvent<HTMLElement>) => {
+
+        history.push(Setting.VIEW_PATH.SIGNUP);
+    }
+
 
     return {
         state,
