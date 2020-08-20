@@ -15,9 +15,11 @@ export class Phase {
     // Phaseごとにタイマーも初期化するため、アクティブなものをリストで管理
     private _activeTimers: NodeJS.Timeout[];
 
-    constructor(initialPhase: BaseData.Phase) {
+    constructor(initialPhase: BaseData.Phase, message?: string) {
         this.currentPhase = initialPhase;
         this._activeTimers = [];
+
+        this.message = message;
     }
 
     /**

@@ -5,7 +5,7 @@ import * as BaseData from './BaseData';
  */
 export class Field<FieldName, Value> {
 
-    // 名称 name属性ではなく、種類を区別するために利用
+    // 名称 name属性
     private _name: FieldName;
     // 表示名
     private _label: string;
