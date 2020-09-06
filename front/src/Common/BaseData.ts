@@ -13,36 +13,30 @@ export interface ErrorObject {
     message: string
 }
 
-// GETレスポンス
-export interface BaseGetResponse {
-    statusCode: StatusCode,
-    ok: boolean,
-    errors?: ErrorObject[]
-}
-
-// POSTレスポンス メッセージとステータスコードを格納
-export interface PostResponse {
+export interface BaseAPIResponse {
     message: string,
     statusCode: StatusCode,
     ok: boolean,
     errors?: ErrorObject[]
 }
 
-// APIへのGETリクエスト関数
-export type GetAPI<GetParameter, GetResponse> = {(param?: GetParameter): Promise<GetResponse>}
 
-export interface GetCallbackHandler<Args extends any[]> {
-    handler: {(response: BaseGetResponse, ...args : Args)},
+// GET API
+export type GetAPI<GetParameter extends {}, GetResponse extends BaseAPIResponse> = {(path: string, param?: GetParameter): Promise<GetResponse>}
+
+export interface GetCallbackHandler<Response extends BaseAPIResponse, Args extends any[]> {
+    handler: {(response: Response, ...args : Args)},
     args: Args
 }
 
-// APIへのPOSリクエスト関数
-export type PostAPI<Body> = {(body: Body, path?: string): Promise<PostResponse>}
+// POST API
+export type PostAPI<Body, PostResponse extends BaseAPIResponse> = {(path: string, body: Body): Promise<PostResponse>}
 
 export interface PostCallbackHandler<Args extends any[]> {
-    handler: {(response: PostResponse, ...args : Args)},
+    handler: {(response: BaseAPIResponse, ...args : Args)},
     args: Args
 }
+
 
 // 画面上の処理の進行状況
 export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE' | 'FATAL'
@@ -59,7 +53,6 @@ export interface BaseAction<DispatchType> {
     type: DispatchType
 };
 
-
 // 処理待機中アクション ユーザからのイベントを待機している状態
 export interface IdleAction extends BaseAction<'IDLE'> {}
 
@@ -67,7 +60,7 @@ export interface IdleAction extends BaseAction<'IDLE'> {}
 export interface BeforeGetAction extends BaseAction<'BEFORE_GET'>{}
 export interface AfterGetAction extends BaseAction<'SUCCESS_GET'| 'FAILURE_GET'> {
     payload: {
-        response: BaseGetResponse
+        response: BaseAPIResponse
     }
 }
 
@@ -76,7 +69,7 @@ export interface BeforePostAction extends BaseAction<'BEFORE_POST'>{}
 // POST後処理アクション 処理結果に応じてアクションの種類を切り替え
 export interface AfterPostAction extends BaseAction<'SUCCESS_POST' | 'FAILURE_POST'>{
     payload: {
-        response: PostResponse
+        response: BaseAPIResponse
     }
 }
 

@@ -1,7 +1,8 @@
 import React from 'react';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, clone } from 'lodash';
 
 import * as BaseData from './BaseData';
+import * as APIHandler from './Logic/apiHandler';
 import { Field } from './Field';
 import { getPropertyByKeyString } from './Logic/objectHandler';
 import { reducer as baseReducer } from './reducer';
@@ -14,22 +15,25 @@ import { reducer as baseReducer } from './reducer';
  * 
  * @return GET APIリクエストを発火させるためのトリガー
  */
-export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIArgs extends any[]= []>(
+export const useGetAPI = <GetAPIArg = {}, GetResponse extends BaseData.BaseAPIResponse=BaseData.BaseAPIResponse>(
     dispatch: React.Dispatch<BaseData.IBaseAction>, 
-    getAPI: BaseData.GetAPI<GetAPIArgs, GetResponse>,
+    getAPI?: BaseData.GetAPI<GetAPIArg, GetResponse>,
 ) => {
 
     /**
      * GET APIリクエストを発行
      * 
-     * @param getAPIArgs GET APIへ渡す引数
+     * @param getAPIArg GET APIへ渡す引数オブジェクト
      * 
      * @return GET レスポンス
      */
-    const executeGet = async (getAPIArgs: GetAPIArgs) => {
-        const response = await getAPI(...getAPIArgs);
+    const executeGet = async (path: string, getAPIArg?: GetAPIArg) => {
 
-        // 処理結果をActionを介してStateへ反映
+        // 指定されたパスへ、クエリ文字列つきのGETリクエストを送信するAPI or ユーザ定義のGET API
+        const api = getAPI ? getAPI : APIHandler.get;
+        const response = await api(path, getAPIArg);
+
+        // GETリクエストの後処理
         const action: BaseData.AfterGetAction = {
             type: response.ok ? 'SUCCESS_GET' : 'FAILURE_GET',
             payload: {
@@ -44,14 +48,15 @@ export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIAr
     /**
      * GET APIリクエストを呼び元で発火
      * 
-     * @param getAPIArgs GET APIリクエストへ渡す引数
+     * @param getAPIArg GET APIリクエストへ渡す引数オブジェクト
      * @param successHandler リクエスト成功時実行処理
      * @param failureHandler リクエスト失敗時実行処理
      */
     const emitGet = <SuccessHandlerArgs extends any[], FailureHandlerArgs extends any[]>(
-        getAPIArgs?: GetAPIArgs,
-        successHandler?: BaseData.GetCallbackHandler<SuccessHandlerArgs>,
-        failureHandler?: BaseData.GetCallbackHandler<FailureHandlerArgs>
+        path: string,
+        getAPIArg?: GetAPIArg,
+        successHandler?: BaseData.GetCallbackHandler<GetResponse, SuccessHandlerArgs>,
+        failureHandler?: BaseData.GetCallbackHandler<GetResponse, FailureHandlerArgs>
     ) => {
         
         // 前処理
@@ -63,7 +68,7 @@ export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIAr
         // GETリクエスト発行後のコールバック処理
         const callbackGet = async () => {
 
-            const response: GetResponse = await executeGet(getAPIArgs);
+            const response: GetResponse = await executeGet(path, getAPIArg);
 
             // 成功
             if (response.ok && successHandler) {
@@ -90,9 +95,9 @@ export const useGetAPI = <GetResponse extends BaseData.BaseGetResponse, GetAPIAr
  * @return
  *     emitPost: POSTリクエストのトリガー フックはTOPレベルでのみ利用できるので、イベントでPOST処理を実行できるようトリガーを返却
  */
-export const usePostAPI = <Body>(
+export const usePostAPI = <Body, PostResponse extends BaseData.BaseAPIResponse=BaseData.BaseAPIResponse>(
     dispatch: React.Dispatch<BaseData.IBaseAction>, 
-    postAPI: BaseData.PostAPI<Body>
+    postAPI?: BaseData.PostAPI<Body, PostResponse>
 ) => {
 
     /**
@@ -100,9 +105,11 @@ export const usePostAPI = <Body>(
      * 
      * @param body POSTリクエストボディ
      */
-    const executePost = async (body: Body, path?: string): Promise<BaseData.PostResponse> => {
+    const executePost = async (path: string, body: Body): Promise<PostResponse> => {
 
-        const response = await postAPI(body, path);
+        // 指定されたパスへ、ボディつきのリクエストを送信するPOST API or ユーザ定義のPOST API
+        const api = postAPI ? postAPI : APIHandler.post;
+        const response = await api(path, body);
 
         // 処理結果をActionを介してStateへ反映
         const action: BaseData.AfterPostAction = {
@@ -124,8 +131,8 @@ export const usePostAPI = <Body>(
      * @param failureHandler POST失敗処理
      */
     const emitPost = <SuccessHandlerArgs extends any[], FailureHandlerArgs extends any[]>(
+        path: string,
         body: Body,
-        path?: string,
         successHandler?: BaseData.PostCallbackHandler<SuccessHandlerArgs>,
         failureHandler?: BaseData.PostCallbackHandler<FailureHandlerArgs>
     ) => {
@@ -141,7 +148,7 @@ export const usePostAPI = <Body>(
          */
         const callbackPost = async () => {
 
-            const response = await executePost(body, path);
+            const response = await executePost(path, body);
 
             // 成功
             if (response.ok && successHandler) {
@@ -172,7 +179,7 @@ interface ValidationHook<State, FieldNames, Values> {
 /**
  * 固有のバリデーション処理をもとに、イベントハンドラから呼び出す汎用バリデーション処理を生成
  * 
- * @param executeValidate 個別バリデーション処理
+ * @param executeValidate 個別バリデーション処理 Stateは相関チェック用にディープコピーしたもの
  * @param validationRequiredfields バリデーションが必要なフィールド名文字列 isValid処理の検証対象となる
  * @return ValidationHook
  */
@@ -185,7 +192,7 @@ export const useValidation = <State, FieldNames extends string, Values >(
      * バリデーション処理
      * 固有のバリデーション処理を汎用的に呼び出せるよう前処理として型を整形
      * 
-     * @param state 更新対象の状態
+     * @param state 相関チェック用のState 更新自体はreducerが担う
      * @param fieldName バリデーション対象の種類
      * @param fieldValue バリデーション対象値
      * 
@@ -194,7 +201,9 @@ export const useValidation = <State, FieldNames extends string, Values >(
     const validate = (state: State, fieldName: FieldNames, fieldValue: Values): boolean => {
 
         // エラーを詰め込み、State内のフィールド値を更新するためのField要素をname属性をもとに取得
-        const field = cloneDeep(getPropertyByKeyString<State>(state, fieldName) as Field<FieldNames, Values>);
+        // また、Stateはreducerでのみ更新されるべきなので、バリデーション用にディープコピーしたものを利用
+        const validationState = cloneDeep(state);
+        const field = getPropertyByKeyString<State>(validationState, fieldName) as Field<FieldNames, Values>;
 
         const results = executeValidate(state, field, fieldValue);
         const action: BaseData.AfterValidationAction<FieldNames, Values> = {
@@ -292,6 +301,7 @@ export const useBaseReducer = <ChildState extends BaseData.BaseState, ChildActio
             return false;
         }
 
+        // ReactはStateが同一のオブジェクトだった場合、再描画しないので、再描画されるようディープコピー
         let modState = cloneDeep(state);
 
         // ベース部分のreducer

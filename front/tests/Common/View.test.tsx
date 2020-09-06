@@ -103,7 +103,7 @@ describe('汎用Viewの表示検証', () => {
         domTestEach<LoadingTestArgs>([
             ['INIT', new Phase('INIT')],
             ['LOADING', new Phase('LOADING')]
-        ], '読み込み処理中に読み込み中オーバーレイが表示されること。_%s', (_, phase: Phase, container: HTMLDivElement) => {
+        ], '読み込み処理中に読み込み中オーバーレイが表示されること。_%s', (container: HTMLDivElement, _, phase) => {
 
             // GIVEN
             const expectedLoadingClassSelector = '.Loading';
