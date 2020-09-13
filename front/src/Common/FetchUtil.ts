@@ -1,4 +1,4 @@
-import * as BaseData from './BaseData';
+import * as BaseData from 'Common/BaseData';
 
 /**
  * APIからリソースを取得
@@ -9,10 +9,16 @@ import * as BaseData from './BaseData';
  */
 export const get = async <Response>(url: string): Promise<Response> => {
 
-    const response = await fetch(url);
-    const responseJSON = await response.json() as Promise<Response>;
+    const response = await fetch(url)
+        .then(async (res) => {
+            const resJSON = await res.json();
+            return {
+                ...resJSON,
+                ok: res.ok
+            }
+        });
 
-    return responseJSON;
+    return response;
 };
 
 /**
@@ -23,7 +29,7 @@ export const get = async <Response>(url: string): Promise<Response> => {
  * 
  * @return reponseJSON レスポンスをJSONに整形するPromiseオブジェクト
  */
-export const post = async <Body, Response>(url: string, body: Body): Promise<Response> => {
+export const post = async <Body, Response extends BaseData.BaseAPIResponse>(url: string, body: Body): Promise<Response> => {
 
     const options = {
         method: 'POST',
@@ -32,8 +38,13 @@ export const post = async <Body, Response>(url: string, body: Body): Promise<Res
     };
 
     const response = await fetch(url, options)
-    const responseJSON = await response.json();
-    responseJSON.ok = response.ok;
+        .then(async (res) => {
+            const resJSON = await res.json();
+            return {
+                ...resJSON,
+                ok: res.ok
+            }
+        });
 
-    return responseJSON;
+    return response;
 };

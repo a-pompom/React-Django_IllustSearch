@@ -14,9 +14,9 @@ const LOGIN_PATH = Setting.API_PATH.LOGIN;
 /**
  * APIよりカテゴリの一覧を取得
  */
-export const getUserList = async <GetParameter>(param?: GetParameter): Promise<LoginData.User[]> => {
+export const getUserList = async <GetParameter>(param?: GetParameter): Promise<LoginData.GetResponse> => {
 
-    const response = await FetchUtil.get<LoginData.UserResponse>(`${END_POINT}/${LOGIN_PATH}`);
+    const response = await FetchUtil.get<LoginData.GetResponse>(`${END_POINT}${LOGIN_PATH}`);
 
     // レスポンス→View用オブジェクトへ詰め替え
     const userList = response.users.map((user): LoginData.User => {
@@ -26,8 +26,26 @@ export const getUserList = async <GetParameter>(param?: GetParameter): Promise<L
             iconPath: ''
         };
     });
+    response.users = userList;
 
-    return userList;
+    return response;
+};
+
+/**
+ * APIへのGETリクエスト成功時に実行される処理 ユーザ情報を反映させるためのアクションを発行
+ * 
+ * @param response 
+ * @param dispatch 
+ */
+export const handleGetSuccess = (response: LoginData.GetResponse, dispatch: React.Dispatch<LoginData.IAction>) => {
+
+    const action: LoginData.FetchSuccessAction = {
+        type: 'FETCH_SUCCESS',
+        payload: {
+            response: response
+        }
+    };
+    dispatch(action);
 };
 
 /**
@@ -39,7 +57,7 @@ export const getUserList = async <GetParameter>(param?: GetParameter): Promise<L
  */
 export const postLogin = async <Body>(body: Body): Promise<PostResponse> => {
 
-    const response = await FetchUtil.post<Body, PostResponse>(`${END_POINT}/${LOGIN_PATH}`, body);
+    const response = await FetchUtil.post<Body, PostResponse>(`${END_POINT}${LOGIN_PATH}`, body);
 
     return response;
 }
@@ -47,9 +65,13 @@ export const postLogin = async <Body>(body: Body): Promise<PostResponse> => {
 /**
  * ログイン成功処理 TOP画面へ遷移
  * 
+ * @param response POST処理結果レスポンス
  * @param history 画面遷移用のHistoryAPI
  */
-export const handlePostSuccess = (history: H.History<{}>) => {
+export const handlePostSuccess = (
+    response: BaseData.PostResponse,
+    history: H.History<{}>
+) => {
 
     history.push(Setting.VIEW_PATH.SIGNUP);
 }
@@ -57,9 +79,11 @@ export const handlePostSuccess = (history: H.History<{}>) => {
 /**
  * ログイン失敗処理 エラーメッセージを表示
  * 
+ * @param response POST処理結果レスポンス
  * @param dispatch アクションの実行 エラーメッセージを一定時間表示後に消去するために利用
  */
 export const handlePostFailure = (
+    response: BaseData.PostResponse,
     dispatch: React.Dispatch<BaseData.IBaseAction>, 
 ) => {
     const timer = global.setTimeout(() => {

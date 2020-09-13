@@ -1,4 +1,4 @@
-import { getPropertyByKeyString } from 'Common/objectHandler';
+import { getPropertyByKeyString } from 'Common/Logic/objectHandler';
 
 describe('ネストしたオブジェクト内のプロパティをキー文字列で取得', () => {
 

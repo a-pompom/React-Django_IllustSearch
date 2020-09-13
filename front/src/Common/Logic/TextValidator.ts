@@ -6,7 +6,7 @@ import { Field } from '../Field';
  * @param field 検査対象フィールド
  * @param minLength 最小桁数
  */
-export const validateMinLength = <Value>(field: Field<Value>, minLength: number): void => {
+export const validateMinLength = <Value>(field: Field<string, Value>, minLength: number): void => {
     
     const target = String(field.value).length;
 
@@ -24,7 +24,7 @@ export const validateMinLength = <Value>(field: Field<Value>, minLength: number)
  * @param field 検査対象フィールド
  * @param maxLength 最大桁数
  */
-export const validateMaxLength = <Value>(field: Field<Value>, maxLength: number): void => {
+export const validateMaxLength = <Value>(field: Field<string, Value>, maxLength: number): void => {
     
     const target = String(field.value).length;
 
@@ -42,7 +42,7 @@ export const validateMaxLength = <Value>(field: Field<Value>, maxLength: number)
  * 
  * @param field 検証対象の入力フィールド
  */
-export const validateNum = <Value>(field: Field<Value>): void => {
+export const validateNum = <Value>(field: Field<string, Value>): void => {
 
     const isNumeric = /^[-]?([1-9]\d*|0)(\.\d+)?$/.test(String(field.value));
 
@@ -60,7 +60,7 @@ export const validateNum = <Value>(field: Field<Value>): void => {
  * 
  * @param field バリデーション対象
  */
-export const validateAlphaNumericText = <Value>(field: Field<Value>): void => {
+export const validateAlphaNumericText = <Value>(field: Field<string, Value>): void => {
 
     const target = String(field.value);
 

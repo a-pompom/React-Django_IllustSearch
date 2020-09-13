@@ -1,5 +1,5 @@
 import React from 'react';
-import * as BaseData from './BaseData';
+import * as BaseData from '../BaseData';
 
 /**
  * 読込中や登録完了など、処理の進行状況に応じたViewを表示するためのコンポーネント

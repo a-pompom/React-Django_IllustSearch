@@ -102,4 +102,30 @@
             height: 42px;
         }
     }
+
+    .Error {
+        
+        display: block;
+        font-size: 1.2rem;
+
+        @include Mixin.responsive(sp-tb) {
+
+            margin-left: 25vw;
+            margin-top: 1.5vh;
+        }
+        
+        @include Mixin.responsive(pc) {
+
+            margin-left: 37vw;
+            margin-top: 1.5vh;
+        }
+    }
+    .PopupError {
+
+        position: absolute;
+        top: 10%;
+        left: 40%;
+        
+        font-size: 1.8rem;
+    }
 }
