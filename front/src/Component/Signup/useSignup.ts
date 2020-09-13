@@ -1,7 +1,6 @@
 import React, { useReducer } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import * as BaseAPIHandler from 'Common/Logic/apiHandler';
 import { Field } from 'Common/Field';
 import { Phase } from 'Common/Phase';
 import * as BaseHook from 'Common/useBase';
@@ -9,7 +8,6 @@ import { Setting } from 'settings';
 
 import { handleValidateUniqueUserFailure, handleSuccessUserCreate } from './apiHandler';
 import * as SignupData from './signupData';
-import { reducer } from './reducer';
 import { executeValidate } from './validator';
 
 /**
@@ -26,12 +24,12 @@ export const useSignup = (): SignupData.Hook => {
     };
 
     // reducer
-    const reducerWrapper = BaseHook.useBaseReducer<SignupData.State, SignupData.IAction>(reducer);
+    const reducerWrapper = BaseHook.useBaseReducer<SignupData.State, SignupData.IAction>();
     const [state, dispatch] = useReducer(reducerWrapper, initialState);
 
     // POST処理
-    const emitPost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, BaseAPIHandler.post);
-    const emitUserUniquePost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch, BaseAPIHandler.post);
+    const emitPost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch);
+    const emitUserUniquePost = BaseHook.usePostAPI<SignupData.PostBody>(dispatch);
 
     // バリデーション
     const {validate, isValid} = BaseHook.useValidation<SignupData.State, SignupData.FieldName, SignupData.Value>(
@@ -58,8 +56,8 @@ export const useSignup = (): SignupData.Hook => {
 
         // 重複チェック 重複している場合はエラーメッセージを表示
         emitUserUniquePost(
-            {username: event.target.value}, 
             Setting.API_PATH.VALIDATE_UNIQUE_USER,
+            {username: event.target.value}, 
             null,
             {
                 handler: handleValidateUniqueUserFailure,
@@ -81,8 +79,8 @@ export const useSignup = (): SignupData.Hook => {
         }
 
         emitPost(
-            {username: state.username.value},
             Setting.API_PATH.SIGNUP,
+            {username: state.username.value},
             {
                 handler: handleSuccessUserCreate,
                 args: [history]
@@ -99,7 +97,6 @@ export const useSignup = (): SignupData.Hook => {
 
         history.push(Setting.VIEW_PATH.LOGIN);
     }
-
 
     return {
         state,

@@ -4,8 +4,11 @@ import { Field } from 'Common/Field';
 
 // APIからのレスポンス
 export interface GetResponse extends BaseData.BaseAPIResponse {
-    name: string,
-    age: number
+    body: BaseData.BaseAPIResponse['body'] & {
+        name: string,
+        age: number
+
+    }
 }
 export interface PostResponse extends BaseData.BaseAPIResponse {}
 

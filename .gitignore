@@ -171,3 +171,4 @@ app_login/migrations
 normalize.css
 *css.map
 *.sh
+stream-browserify

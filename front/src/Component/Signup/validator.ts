@@ -1,9 +1,10 @@
 import * as BaseData from 'Common/BaseData';
 import { Field } from 'Common/Field';
+import { validateMaxLength } from 'Common/Logic/TextValidator';
 import * as SignupData from './signupData';
 
 /**
- * 各フィールド値の妥当性を検証
+ * ユーザ名を検証 最大長のみを対象とする
  * 
  * @param state 更新対象の状態
  * @param field バリデーション対象のフィールド
@@ -20,6 +21,9 @@ export const executeValidate = (
     if (field.name === 'username') {
         field.value = value;
         field.errors = [];
+
+        const MAX_USERNAME_LENGTH = 255;
+        validateMaxLength(field, MAX_USERNAME_LENGTH);
 
         results.push(field.getValidationResult());
     }

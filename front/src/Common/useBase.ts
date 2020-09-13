@@ -205,7 +205,7 @@ export const useValidation = <State, FieldNames extends string, Values >(
         const validationState = cloneDeep(state);
         const field = getPropertyByKeyString<State>(validationState, fieldName) as Field<FieldNames, Values>;
 
-        const results = executeValidate(state, field, fieldValue);
+        const results = executeValidate(validationState, field, fieldValue);
         const action: BaseData.AfterValidationAction<FieldNames, Values> = {
             type: 'AFTER_VALIDATION',
             payload: {
@@ -225,13 +225,14 @@ export const useValidation = <State, FieldNames extends string, Values >(
      */
     const isValid = (state: State): boolean => {
 
+        const validationState = cloneDeep(state);
         let isValid = true;
         const validationResults = [];
 
         // 検証が必要なフィールド名をもとにvalidate処理と同様の処理を実行
         validationRequiredfields.forEach((fieldName) => {
 
-            const field = cloneDeep(getPropertyByKeyString<State>(state, fieldName) as Field<FieldNames, Values>);
+            const field = cloneDeep(getPropertyByKeyString<State>(validationState, fieldName) as Field<FieldNames, Values>);
 
             // 既にエラーがある場合は妥当となることはないので、検証不要
             if (field.errors.length !== 0) {
@@ -239,7 +240,7 @@ export const useValidation = <State, FieldNames extends string, Values >(
                 return;
             }
 
-            const results = executeValidate(state, field, field.value);
+            const results = executeValidate(validationState, field, field.value);
             const hasError = results.filter(result => ! result.isValid).length !== 0;
 
             // 検証対象に一つでもエラーがあれば妥当ではない
@@ -276,9 +277,9 @@ export const useValidation = <State, FieldNames extends string, Values >(
  * 
  * @param childRecuer 個別のreducer
  */
-export const useBaseReducer = <ChildState extends BaseData.BaseState, ChildAction extends BaseData.BaseAction<string>>
-    (childRecuer: {(state: ChildState, action: ChildAction): ChildState}
-): {(state: ChildState, action: ChildAction): ChildState} => {
+export const useBaseReducer = <State extends BaseData.BaseState, Action extends BaseData.BaseAction<string>>
+    (childRecuer?: {(state: State, action: Action): State}
+): {(state: State, action: Action): State} => {
 
     /**
      * useReducerフックのdispatchで実際に呼ばれる処理
@@ -286,7 +287,7 @@ export const useBaseReducer = <ChildState extends BaseData.BaseState, ChildActio
      * @param state 更新対象の状態
      * @param action 更新アクション
      */
-    const reducerWrapper = (state: ChildState, action: ChildAction) => {
+    const reducerWrapper = (state: State, action: Action) => {
 
         /**
          * アクションがベース処理のものか判定
@@ -306,11 +307,13 @@ export const useBaseReducer = <ChildState extends BaseData.BaseState, ChildActio
 
         // ベース部分のreducer
         if (isIBaseAction(action)) {
-            modState = baseReducer<ChildState>(modState, action);
+            modState = baseReducer<State>(modState, action);
         }
 
         // 個別のreducerでStateを更新 ベース部分の更新も上書き可能
-        modState = childRecuer(modState, action);
+        if (childRecuer) {
+            modState = childRecuer(modState, action);
+        }
 
         return modState;
     };

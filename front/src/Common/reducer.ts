@@ -38,7 +38,11 @@ export const reducer = <State extends BaseData.BaseState>(state: State, action: 
             action.payload.results.forEach((result) => {
 
                 const oldField = getPropertyByKeyString<State>(state, result.fieldName) as Field<string, unknown>;
-                oldField.value = result.fieldValue;
+
+                // APIによる検証の場合は、もとの値を保持しないので、更新すると空になる よって、更新値が存在する場合のみ更新
+                if (result.fieldValue) {
+                    oldField.value = result.fieldValue;
+                }
                 oldField.errors = result.errors;
             });
             return state;

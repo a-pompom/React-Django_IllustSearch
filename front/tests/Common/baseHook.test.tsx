@@ -284,7 +284,7 @@ describe('カスタムフックの動作検証', () => {
         const apiInfo: APIMockInfo<TestData.GetResponse, TestData.GetAPIParam> = {
             PATH: `${Setting.API_ENDPOINT}${GET_PATH}`,
             method: 'get',
-            expectedResponse: {name: user.name, age: user.age, message: '', ok: true, statusCode: 200},
+            expectedResponse: {body: {name: user.name, age: user.age, message: ''}, ok: true, status: 200},
             body: user
         };
 
@@ -311,8 +311,8 @@ describe('カスタムフックの動作検証', () => {
                 });
 
                 // THEN
-                expect(container.querySelector('#ResponseName').textContent).toBe(apiInfo.expectedResponse.name);
-                expect(container.querySelector('#ResponseAge').textContent).toBe(String(apiInfo.expectedResponse.age));
+                expect(container.querySelector('#ResponseName').textContent).toBe(apiInfo.expectedResponse.body.name);
+                expect(container.querySelector('#ResponseAge').textContent).toBe(String(apiInfo.expectedResponse.body.age));
 
             }, [apiInfo]);
         }, true);
@@ -361,7 +361,7 @@ describe('カスタムフックの動作検証', () => {
             const externalApiInfo: APIMockInfo<TestData.GetResponse, TestData.GetAPIParam> = {
                 PATH: `external/api/`,
                 method: 'get',
-                expectedResponse: {name: user.name, age: user.age, message: '', ok: false, statusCode: 401},
+                expectedResponse: {body: {name: user.name, age: user.age, message: ''}, ok: false, status: 401},
             } 
 
             apiTest('定義したGET APIによって、デフォルトのGET APIを上書きできること。', async () => {
@@ -380,8 +380,8 @@ describe('カスタムフックの動作検証', () => {
                 });
 
                 // THEN
-                expect(container.querySelector('#ResponseName').textContent).toBe(apiInfo.expectedResponse.name);
-                expect(container.querySelector('#ResponseAge').textContent).toBe(String(apiInfo.expectedResponse.age));
+                expect(container.querySelector('#ResponseName').textContent).toBe(apiInfo.expectedResponse.body.name);
+                expect(container.querySelector('#ResponseAge').textContent).toBe(String(apiInfo.expectedResponse.body.age));
 
                 const expectedActionHistoryList = ['BEFORE_GET', 'FAILURE_GET', 'GET_FAILURE_HANDLER'];
                 container.querySelector('#ActionHistory').childNodes.forEach((action, index) => {
@@ -402,7 +402,7 @@ describe('カスタムフックの動作検証', () => {
         const apiInfo: APIMockInfo<TestData.PostResponse, TestData.PostAPIBody> = {
             PATH: `${Setting.API_ENDPOINT}${POST_PATH}`,
             method: 'post',
-            expectedResponse: {message: responseMessage, ok: true, statusCode: 200},
+            expectedResponse: {body: {message: responseMessage}, ok: true, status: 200},
             body: body
         } 
 
@@ -429,7 +429,7 @@ describe('カスタムフックの動作検証', () => {
                 });
 
                 // THEN
-                expect(container.querySelector('#ResponseMessage').textContent).toBe(apiInfo.expectedResponse.message);
+                expect(container.querySelector('#ResponseMessage').textContent).toBe(apiInfo.expectedResponse.body.message);
 
             }, [apiInfo]);
         }, true);
@@ -479,7 +479,7 @@ describe('カスタムフックの動作検証', () => {
             const externalApiInfo: APIMockInfo<TestData.PostResponse, TestData.PostAPIBody> = {
                 PATH: `external/api/`,
                 method: 'post',
-                expectedResponse: {message: responseMessage, ok: false, statusCode: 401},
+                expectedResponse: {body: {message: responseMessage}, ok: false, status: 401},
             } 
 
             apiTest('定義したPOST APIによって、デフォルトのPOST APIを上書きできること。', async () => {
@@ -498,7 +498,7 @@ describe('カスタムフックの動作検証', () => {
                 });
 
                 // THEN
-                expect(container.querySelector('#ResponseMessage').textContent).toBe(apiInfo.expectedResponse.message);
+                expect(container.querySelector('#ResponseMessage').textContent).toBe(apiInfo.expectedResponse.body.message);
 
                 const expectedActionHistoryList = ['BEFORE_POST', 'FAILURE_POST', 'POST_FAILURE_HANDLER'];
                 container.querySelector('#ActionHistory').childNodes.forEach((action, index) => {

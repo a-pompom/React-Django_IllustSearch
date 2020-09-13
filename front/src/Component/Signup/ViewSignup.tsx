@@ -34,6 +34,7 @@ export const SignupView: React.FC<SignupData.Hook> = ({
 
             <button
                 type="button"
+                id="changeViewButton"
                 className="Cancel"
 
                 onClick={changeViewEvent}

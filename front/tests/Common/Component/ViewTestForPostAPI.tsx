@@ -90,7 +90,7 @@ export const ViewTestForPostAPI: React.FC<TestData.ViewTestForPostAPIProps> = ({
 
             {/* レスポンス */}
             <p id="ResponseMessage">
-                {state.response ? state.response.message : null}
+                {state.response ? state.response.body.message : null}
             </p>
 
         </React.Fragment>

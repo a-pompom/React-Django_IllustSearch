@@ -9,7 +9,7 @@ import Adapter from "enzyme-adapter-react-16/build";
  * @param testBody テスト処理本体
  * @param nested API操作など、他のテストと併用するか
  */
-export const domTest = (testName: string, testBody: (container: HTMLDivElement)=> void, nested?: boolean) => {
+export const domTest = (testName: string, testBody: (container: HTMLDivElement, ...args: any)=> void, nested?: boolean) => {
 
     /**
      * テスト処理本体をデコレートする関数
@@ -18,16 +18,18 @@ export const domTest = (testName: string, testBody: (container: HTMLDivElement)=
     const testFunction = () => {
 
         // Setup コンポーネントを配置するためのdiv要素をbody配下へ追加
+        const body = document.querySelector('body');
         const container = document.createElement('div');
+
         container.setAttribute('id', 'Container');
-        document.body.appendChild(container);
+        body.appendChild(container);
 
         // テスト処理
         testBody(container);
 
         // Teardown
         // 作成したdiv要素をクリア
-        document.body.removeChild(container);
+        body.removeChild(container);
     }
 
     // 他のテストデコレータと併用する場合は、ネストできないので、test関数は実行しない
@@ -38,6 +40,46 @@ export const domTest = (testName: string, testBody: (container: HTMLDivElement)=
 
     test(testName, testFunction);
 };
+
+/**
+ * コンポーネントの描画にDOM操作が必要なテスト 非同期処理を挟む用
+ * 
+ * @param testName 処理テスト名
+ * @param testBody テスト処理本体
+ * @param nested API操作など、他のテストと併用するか
+ */
+export const asyncDomTest = (testName: string, testBody: (container: HTMLDivElement, ...args: any)=> Promise<any>, nested?: boolean) => {
+
+    /**
+     * テスト処理本体をデコレートする関数
+     * コンポーネント描画用のdiv要素をテスト前に生成し、テスト後に破棄
+     */
+    const testFunction = async () => {
+
+        // Setup コンポーネントを配置するためのdiv要素をbody配下へ追加
+        const body = document.querySelector('body');
+        const container = document.createElement('div');
+
+        container.setAttribute('id', 'Container');
+        body.appendChild(container);
+
+        // テスト処理
+        await testBody(container);
+
+        // Teardown
+        // 作成したdiv要素をクリア
+        body.removeChild(container);
+    }
+
+    // 他のテストデコレータと併用する場合は、ネストできないので、test関数は実行しない
+    if (nested) {
+        testFunction();
+        return;
+    }
+
+    test(testName, testFunction);
+};
+
 
 /**
  * コンポーネントの描画にDOM操作が必要なテスト 複数テストをまとめて実行
@@ -83,8 +125,8 @@ export interface APIMockInfo<Response, Body> {
  * @param testBody テスト本体
  * @param apiMockInfoList APIのパス・メソッド・仮のレスポンスを格納したオブジェクト
  */
-export const apiTest = <APIResponse, Body extends {}>(
-    testName: string, testBody: Function, apiMockInfoList: APIMockInfo<APIResponse, Body>[]
+export const apiTest = async (
+    testName: string, testBody: Function, apiMockInfoList: APIMockInfo<any, any>[], nested?: Boolean
 ) => {
 
     /**
@@ -96,6 +138,7 @@ export const apiTest = <APIResponse, Body extends {}>(
         // Setup
         // Reactのバージョンを固定
         configure({ adapter: new Adapter() });
+        FetchMock.config.overwriteRoutes = false;
 
         // 各通信のレスポンスを固定
         apiMockInfoList.forEach(apiMockInfo => {
@@ -103,7 +146,6 @@ export const apiTest = <APIResponse, Body extends {}>(
             const mockObject = {
                 url: apiMockInfo.PATH, 
                 method: apiMockInfo.method, 
-                response: apiMockInfo.expectedResponse
             };
             if (mockObject.method === 'get') {
                 mockObject['query'] = apiMockInfo.body;
@@ -112,7 +154,7 @@ export const apiTest = <APIResponse, Body extends {}>(
                 mockObject['body'] = apiMockInfo.body;
             }
 
-            FetchMock.mock(mockObject);
+            FetchMock.mock(mockObject, () => ({body: apiMockInfo.expectedResponse, status: apiMockInfo.expectedResponse['status']}) );
         });
 
         // APIの発行は通常カスタムフックで実行されるため、検証にはコンポーネントのレンダリングが伴う
@@ -122,6 +164,11 @@ export const apiTest = <APIResponse, Body extends {}>(
         // Teardown
         // モックのリセット
         FetchMock.reset();
+    }
+
+    if (nested) {
+        await testFunction();
+        return;
     }
 
     test(testName, testFunction);

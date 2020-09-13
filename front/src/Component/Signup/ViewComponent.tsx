@@ -37,6 +37,7 @@ export const Form: React.FC<SignupData.FormProps> = ({
                 {/* ユーザ登録ボタン */}
                 <input
                     type="submit"
+                    id="signupButton"
                     className="Button"
 
                     value="ユーザ登録"

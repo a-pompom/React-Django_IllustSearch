@@ -12,7 +12,7 @@ import * as SignupData from './signupData';
  * @param dispatch Actionを発火させるためのdispatch関数
  */
 export const handleValidateUniqueUserFailure = (
-    response: BaseData.PostResponse,
+    response: BaseData.BaseAPIResponse,
     fieldName: SignupData.FieldName,
     dispatch: React.Dispatch<SignupData.IAction>
 ) => {
@@ -24,7 +24,7 @@ export const handleValidateUniqueUserFailure = (
                 isValid: false,
                 fieldName,
                 fieldValue: null,
-                errors: [response.errors[0].message] // 今回はユーザ名のみ利用するので、決め打ち
+                errors: [response.body.errors[0].message] // 今回はユーザ名のみ利用するので、決め打ち
             }]
         }
     };
@@ -39,7 +39,7 @@ export const handleValidateUniqueUserFailure = (
  * @param history View変更用のHistoryAPI
  */
 export const handleSuccessUserCreate = (
-    response: BaseData.PostResponse,
+    response: BaseData.BaseAPIResponse,
     history: H.History<{}>
 ) => {
     history.push(Setting.VIEW_PATH.LOGIN);

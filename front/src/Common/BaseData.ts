@@ -3,7 +3,7 @@ import { Phase as PhaseClass } from './Phase';
 // API
 type StatusOK = 200
 type StatusRedirect = 301 | 302 | 303
-type StatusClientError = 400 | 401 | 403 | 404 | 405
+type StatusClientError = 400 | 401 | 403 | 404 | 405 | 422
 type StatusServerError = 500
 export type StatusCode = StatusOK | StatusRedirect | StatusClientError | StatusServerError
 
@@ -14,10 +14,12 @@ export interface ErrorObject {
 }
 
 export interface BaseAPIResponse {
-    message: string,
-    statusCode: StatusCode,
+    body: {
+        message: string,
+        errors?: ErrorObject[]
+    },
+    status: StatusCode,
     ok: boolean,
-    errors?: ErrorObject[]
 }
 
 

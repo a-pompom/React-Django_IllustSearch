@@ -91,10 +91,10 @@ export const ViewTestForGetAPI: React.FC<TestData.ViewTestForGetAPIProps> = ({
 
             {/* レスポンス */}
             <p id="ResponseName">
-                {state.response ? state.response.name : null}
+                {state.response ? state.response.body.name : null}
             </p>
             <p id="ResponseAge">
-                {state.response ? state.response.age : null}
+                {state.response ? state.response.body.age : null}
             </p>
 
         </React.Fragment>
