@@ -32,6 +32,7 @@ export const Form: React.FC<LoginData.FormProps> = ({
 
                 <input
                     type="submit"
+                    id="loginButton"
                     className="Button"
                     value="ログイン"
 
@@ -67,6 +68,7 @@ export const UserList: React.FC<LoginData.UserListProps> = ({
             {/* ログイン/ユーザ登録表示切り替え */}
             <li 
                 onClick={changeViewEvent}
+                id="changeViewButton"
                 className="Add"
             >
                 +

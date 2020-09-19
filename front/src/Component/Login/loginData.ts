@@ -2,18 +2,20 @@ import { Field } from 'Common/Field';
 import * as BaseData from 'Common/BaseData';
 
 // 画面で表示するログイン用ユーザ情報
-export interface User {
+export type User = {
     username: string,
     iconPath: string
-}
+};
 // APIからのレスポンス
-export interface GetResponse extends BaseData.BaseGetResponse {
-    users: User[]
+export type GetResponse = BaseData.BaseAPIResponse & {
+    body: BaseData.BaseAPIResponse['body'] & {
+        users: User[]
+    }
 }
 // POSTリクエストボディ
-export interface PostBody {
+export type PostBody = {
     username: string
-}
+};
 
 // State要素・イベントハンドラ
 
@@ -31,48 +33,48 @@ export type LoginEvent = {(event: React.MouseEvent<HTMLButtonElement>): void}
 export type ChangeViewEvent = {(event: React.MouseEvent<HTMLElement>)}
 
 // 画面で管理する状態
-export interface State extends BaseData.BaseState {
+export type State = BaseData.BaseState & {
     username: UsernameField<'username', string>
     users: User[]
-}
+};
 
 // Hook 状態・イベントハンドラを管理
-export interface Hook {
+export type Hook = {
     state: State,
     
     changeUsername: ChangeUsername,
     changeViewEvent: ChangeViewEvent,
     loginEvent: LoginEvent,
-}
+};
 
 // ユーザ名変更アクション
-export interface UsernameChangeAction extends BaseData.BaseAction<'CHANGE_USER'> {
+export type UsernameChangeAction = BaseData.BaseAction<'CHANGE_USER'> & {
     type: 'CHANGE_USER',
     paylodad: {
         username: string
     }
-}
+};
 // 初期描画アクション
-export interface FetchSuccessAction extends BaseData.BaseAction<'FETCH_SUCCESS'> {
+export type UserGetAction = BaseData.BaseAction<'USER_GET'> & {
     payload: {
         response: GetResponse
     }
 };
 
 // アクションインタフェース
-export type IAction = BaseData.IBaseAction | FetchSuccessAction | UsernameChangeAction;
+export type IAction = BaseData.IBaseAction | UserGetAction | UsernameChangeAction;
 
 // Component
 // 入力Form Component
-export interface FormProps {
+export type FormProps = {
     username: UsernameField<'username', string>
 
     changeUsername: ChangeUsername,
     loginEvent: LoginEvent,
-}
+};
 // ログインユーザ一覧 Component
-export interface UserListProps {
+export type UserListProps = {
     users: User[],
 
     changeViewEvent: ChangeViewEvent
-}
+};

@@ -1,0 +1,62 @@
+{
+  "name": "react-ts-app",
+  "version": "1.0.0",
+  "description": "react-ts-app",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack -w",
+    "serve": "webpack-dev-server",
+    "test": "jest --verbose "
+  },
+  "author": "a-pompom",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.10.1",
+    "@babel/preset-env": "^7.10.2",
+    "@babel/preset-react": "^7.10.1",
+    "@testing-library/jest-dom": "^5.9.0",
+    "@types/enzyme": "^3.10.5",
+    "@types/jest": "^25.2.3",
+    "@types/lodash": "^4.14.157",
+    "@types/react-dom": "^16.9.8",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "fetch-mock": "^9.10.1",
+    "lodash": "^4.17.15",
+    "node-fetch": "^2.6.0",
+    "ts-jest": "^26.1.0",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.10.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router": "^5.2.0",
+    "react-router-dom": "^5.2.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "tsx"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ],
+    "transform": {
+      "^.+\\.ts$": "ts-jest",
+      "^.+\\.tsx$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    }
+  }
+}

@@ -171,10 +171,10 @@ export const usePostAPI = <Body, PostResponse extends BaseData.BaseAPIResponse=B
  * @param validate バリデーション処理
  * @param isValid 全体をバリデーションし、リクエストを発行しても良い状態か評価する処理
  */
-interface ValidationHook<State, FieldNames, Values> {
+type ValidationHook<State, FieldNames, Values> = {
     validate: {(state: State, fieldname: FieldNames, fieldValue: Values): boolean},
     isValid: {(state: State): boolean}
-}
+};
 
 /**
  * 固有のバリデーション処理をもとに、イベントハンドラから呼び出す汎用バリデーション処理を生成

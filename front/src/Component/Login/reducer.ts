@@ -12,9 +12,9 @@ import { Message } from 'message.properties';
 export const reducer = (state: LoginData.State, action: LoginData.IAction): LoginData.State => {
 
     // 初期描画 APIから取得したユーザをログイン一覧ユーザへ設定
-    if (action.type === 'FETCH_SUCCESS'){
+    if (action.type === 'USER_GET'){
 
-        state.users = action.payload.response.users;
+        state.users = action.payload.response.body.users;
 
         return state;
     }
