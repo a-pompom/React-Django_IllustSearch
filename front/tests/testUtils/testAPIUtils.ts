@@ -10,3 +10,19 @@ export  const getAPIInfo = <Body, APIResponse extends BaseData.BaseAPIResponse>(
     } 
     return apiInfo
 };
+
+/**
+ * ベースとなる正常系レスポンスを取得
+ * 
+ * @return OKレスポンス
+ */
+export const getSimpleOkResponse = (): BaseData.BaseAPIResponse => {
+
+    return {
+        body: {
+            message: 'ok'
+        },
+        status: 200,
+        ok: true
+    };
+};

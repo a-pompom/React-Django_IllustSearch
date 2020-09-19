@@ -1,6 +1,7 @@
 export const Message = {
     Login: {
-        Failure: 'ログインに失敗しました...'
+        Failure: 'ログインに失敗しました...',
+        FailureUsername: 'ユーザ名が間違っています。'
     },
     Signup: {
         Duplicate: 'ユーザ名は既に使用されています。',

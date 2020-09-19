@@ -6,7 +6,7 @@ import { Phase } from 'Common/Phase';
 import * as BaseHook from 'Common/useBase';
 import { Setting } from 'settings';
 
-import { getUserList, postLogin, handleGetSuccess, handlePostSuccess, handlePostFailure } from './apiHandler';
+import { handleUserGetSuccess, handlePostSuccess, handlePostFailure } from './apiHandler';
 import * as LoginData from './loginData';
 import { reducer } from './reducer';
 
@@ -32,16 +32,19 @@ export const useLogin = (): LoginData.Hook => {
     const [state, dispatch] = useReducer(reducerWrapper, initialState);
 
     // 画面表示 ログインユーザ一覧を取得
-    const emitGet = BaseHook.useGetAPI<LoginData.GetResponse>(dispatch, getUserList);
+    const emitGet = BaseHook.useGetAPI<LoginData.GetResponse>(dispatch);
     // POST処理
-    const emitPost = BaseHook.usePostAPI<LoginData.PostBody>(dispatch, postLogin);
+    const emitPost = BaseHook.usePostAPI<LoginData.PostBody>(dispatch);
 
     const history = useHistory();
 
     useEffect(() => {
 
-        emitGet(null, {
-                handler: handleGetSuccess,
+        emitGet(
+            Setting.API_PATH.LOGIN,
+            null, 
+            {
+                handler: handleUserGetSuccess,
                 args: [dispatch]
             }
         );
@@ -75,8 +78,8 @@ export const useLogin = (): LoginData.Hook => {
 
         // POST処理実行
         emitPost(
+            Setting.API_PATH.LOGIN,
             {username: state.username.value},
-            null,
             {
                 handler: handlePostSuccess,
                 args: [history]

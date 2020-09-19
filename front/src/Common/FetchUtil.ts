@@ -10,15 +10,11 @@ import * as BaseData from 'Common/BaseData';
 export const get = async <Response>(url: string): Promise<Response> => {
 
     const response = await fetch(url)
-        .then(async (res) => {
-            const resJSON = await res.json();
-            return {
-                ...resJSON,
-                ok: res.ok
-            }
-        });
-
-    return response;
+    const responseJSON = await response.json();
+    return {
+        ...responseJSON,
+        ok: response.ok
+    };
 };
 
 /**
@@ -38,13 +34,10 @@ export const post = async <Body, Response extends BaseData.BaseAPIResponse>(url:
     };
 
     const response = await fetch(url, options)
-        .then(async (res) => {
-            const resJSON = await res.json();
-            return {
-                ...resJSON,
-                ok: res.ok
-            }
-        });
+    const responseJSON = await response.json();
 
-    return response;
+    return {
+        ...responseJSON,
+        ok: response.ok
+    };
 };

@@ -13,5 +13,6 @@ export const Setting = {
     VIEW_PATH: {
         LOGIN: '/',
         SIGNUP: '/signup/',
+        TOP: '/image/list',
     },
 }

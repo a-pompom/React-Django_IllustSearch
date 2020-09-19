@@ -8,93 +8,93 @@ type StatusServerError = 500
 export type StatusCode = StatusOK | StatusRedirect | StatusClientError | StatusServerError
 
 // APIレスポンスのエラー内容
-export interface ErrorObject {
+export type ErrorObject = {
     fieldName: string,
     message: string
-}
+};
 
-export interface BaseAPIResponse {
+export type BaseAPIResponse = {
     body: {
         message: string,
         errors?: ErrorObject[]
     },
     status: StatusCode,
     ok: boolean,
-}
+};
 
 
 // GET API
-export type GetAPI<GetParameter extends {}, GetResponse extends BaseAPIResponse> = {(path: string, param?: GetParameter): Promise<GetResponse>}
+export type GetAPI<GetParameter extends {}, GetResponse extends BaseAPIResponse> = {(path: string, param?: GetParameter): Promise<GetResponse>};
 
-export interface GetCallbackHandler<Response extends BaseAPIResponse, Args extends any[]> {
+export type GetCallbackHandler<Response extends BaseAPIResponse, Args extends any[]> = {
     handler: {(response: Response, ...args : Args)},
     args: Args
-}
+};
 
 // POST API
-export type PostAPI<Body, PostResponse extends BaseAPIResponse> = {(path: string, body: Body): Promise<PostResponse>}
+export type PostAPI<Body, PostResponse extends BaseAPIResponse> = {(path: string, body: Body): Promise<PostResponse>};
 
-export interface PostCallbackHandler<Args extends any[]> {
+export type PostCallbackHandler<Args extends any[]> = {
     handler: {(response: BaseAPIResponse, ...args : Args)},
     args: Args
-}
+};
 
 
 // 画面上の処理の進行状況
 export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE' | 'FATAL'
 // 進行状況用コンポーネントのProp
-export interface PhaseProps {
+export type PhaseProps = {
     phase: Phase,
     message?: string
-}
+};
 
 // アクション
 
 // 基底アクション
-export interface BaseAction<DispatchType> {
+export type BaseAction<DispatchType> = {
     type: DispatchType
 };
 
 // 処理待機中アクション ユーザからのイベントを待機している状態
-export interface IdleAction extends BaseAction<'IDLE'> {}
+export type IdleAction = BaseAction<'IDLE'> & {};
 
 // GET前後処理アクション
-export interface BeforeGetAction extends BaseAction<'BEFORE_GET'>{}
-export interface AfterGetAction extends BaseAction<'SUCCESS_GET'| 'FAILURE_GET'> {
+export type BeforeGetAction = BaseAction<'BEFORE_GET'> & {};
+export type AfterGetAction = BaseAction<'SUCCESS_GET'| 'FAILURE_GET'> & {
     payload: {
         response: BaseAPIResponse
     }
 }
 
 // POST前処理アクション 二重POSTを防止するため、処理フェーズを切り替える
-export interface BeforePostAction extends BaseAction<'BEFORE_POST'>{}
+export type BeforePostAction = BaseAction<'BEFORE_POST'> & {};
 // POST後処理アクション 処理結果に応じてアクションの種類を切り替え
-export interface AfterPostAction extends BaseAction<'SUCCESS_POST' | 'FAILURE_POST'>{
+export type AfterPostAction = BaseAction<'SUCCESS_POST' | 'FAILURE_POST'> & {
     payload: {
         response: BaseAPIResponse
     }
-}
+};
 
 // バリデーション後処理アクション ユーザの入力値やエラーメッセージをStateへ反映
-export interface AfterValidationAction<FieldNames, Values> extends BaseAction<'AFTER_VALIDATION'> {
+export type AfterValidationAction<FieldNames, Values> = BaseAction<'AFTER_VALIDATION'> & {
     payload: {
         results: ValidationResult<FieldNames, Values>[]
     }
 }
 // バリデーション結果 ネストしたフィールド要素も更新できるよう、name要素・値・エラーを個別に保持
-export interface ValidationResult<FieldName, Value> {
+export type ValidationResult<FieldName, Value> = {
     isValid: boolean,
     fieldName: FieldName,
     fieldValue: Value
     errors: string[]
-}
+};
 
 // ディレイタイマー追加アクション 各Phaseでディレイ表示が必要な要素を管理するために利用
-export interface AddTimerAction extends BaseAction<'ADD_TIMER'> {
+export type AddTimerAction = BaseAction<'ADD_TIMER'> & {
     payload: {
         timer: NodeJS.Timeout
     }
-}
+};
 
 // アクションインタフェース
 export type IBaseAction = 
@@ -106,11 +106,11 @@ export const I_BASE_ACTIONS = ['IDLE', 'AFTER_VALIDATION', 'BEFORE_GET', 'SUCCES
     
 // State 
 
-export interface BaseState {
+export type BaseState = {
     phase: PhaseClass
-}
+};
 
 // エラーメッセージ表示用コンポーネント
-export interface ErrorProps {
+export type ErrorProps = {
     errors: string[]
-}
+};

@@ -7,9 +7,9 @@ import Adapter from "enzyme-adapter-react-16/build";
  * 
  * @param testName 処理テスト名
  * @param testBody テスト処理本体
- * @param nested API操作など、他のテストと併用するか
+ * @param isInNest? 他のテスト内で呼ばれるか テスト関数はネストして呼び出せないので、呼び出しを制御するために利用
  */
-export const domTest = (testName: string, testBody: (container: HTMLDivElement, ...args: any)=> void, nested?: boolean) => {
+export const domTest = (testName: string, testBody: (container: HTMLDivElement, ...args: any)=> void, isInNest?: boolean) => {
 
     /**
      * テスト処理本体をデコレートする関数
@@ -33,7 +33,7 @@ export const domTest = (testName: string, testBody: (container: HTMLDivElement, 
     }
 
     // 他のテストデコレータと併用する場合は、ネストできないので、test関数は実行しない
-    if (nested) {
+    if (isInNest) {
         testFunction();
         return;
     }
@@ -46,9 +46,9 @@ export const domTest = (testName: string, testBody: (container: HTMLDivElement, 
  * 
  * @param testName 処理テスト名
  * @param testBody テスト処理本体
- * @param nested API操作など、他のテストと併用するか
+ * @param isInNest? 他のテスト内で呼ばれるか テスト関数はネストして呼び出せないので、呼び出しを制御するために利用
  */
-export const asyncDomTest = (testName: string, testBody: (container: HTMLDivElement, ...args: any)=> Promise<any>, nested?: boolean) => {
+export const asyncDomTest = (testName: string, testBody: (container: HTMLDivElement, ...args: any)=> Promise<any>, isInNest?: boolean) => {
 
     /**
      * テスト処理本体をデコレートする関数
@@ -72,7 +72,7 @@ export const asyncDomTest = (testName: string, testBody: (container: HTMLDivElem
     }
 
     // 他のテストデコレータと併用する場合は、ネストできないので、test関数は実行しない
-    if (nested) {
+    if (isInNest) {
         testFunction();
         return;
     }
@@ -112,21 +112,22 @@ export const domTestEach = <Args extends any[]>(
 };
 
 // APIモックを生成するためのオブジェクト情報
-export interface APIMockInfo<Response, Body> {
+export type APIMockInfo<Response, Body> = {
     PATH: string,
     method: 'get' | 'post',
     expectedResponse: Response,
     body?: Body
-}
+};
 /**
  * APIとの通信が必要なテスト
  * 
  * @param testName 実行テスト名
  * @param testBody テスト本体
  * @param apiMockInfoList APIのパス・メソッド・仮のレスポンスを格納したオブジェクト
+ * @param isInNest? ネストしたテスト内か テストはネストして呼べないので、呼び出しを制御するために利用
  */
 export const apiTest = async (
-    testName: string, testBody: Function, apiMockInfoList: APIMockInfo<any, any>[], nested?: Boolean
+    testName: string, testBody: Function, apiMockInfoList: APIMockInfo<any, any>[], isInNest?: Boolean
 ) => {
 
     /**
@@ -166,7 +167,7 @@ export const apiTest = async (
         FetchMock.reset();
     }
 
-    if (nested) {
+    if (isInNest) {
         await testFunction();
         return;
     }
