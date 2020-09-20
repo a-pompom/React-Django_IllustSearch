@@ -48,7 +48,7 @@ describe('ログイン処理APIハンドラ', () => {
         handlePostSuccess(null, mockHistory);
 
         // THEN
-        expect(historyMock.mock.calls[0][0]).toBe(Setting.VIEW_PATH.SIGNUP);
+        expect(historyMock.mock.calls[0][0]).toBe(Setting.VIEW_PATH.TOP);
     });
 
     test('ログイン失敗ハンドラでADD_TIMEとIDLEのActionがDispatchされること', () => {

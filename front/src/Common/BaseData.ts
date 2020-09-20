@@ -41,7 +41,7 @@ export type PostCallbackHandler<Args extends any[]> = {
 
 
 // 画面上の処理の進行状況
-export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE' | 'FATAL'
+export type Phase = 'INIT' | 'IDLE' | 'LOADING' | 'FAILURE' | 'FATAL';
 // 進行状況用コンポーネントのProp
 export type PhaseProps = {
     phase: Phase,

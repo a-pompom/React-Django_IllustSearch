@@ -2,9 +2,9 @@ import { Field } from 'Common/Field';
 import * as BaseData from 'Common/BaseData';
 
 // POSTリクエストボディ
-export interface PostBody {
+export type PostBody = {
     username: string
-}
+};
 
 // State要素・イベントハンドラ
 
@@ -22,12 +22,12 @@ export type CreateUserEvent = {(event: React.MouseEvent<HTMLButtonElement>): voi
 export type ChangeViewEvent = {(event: React.MouseEvent<HTMLElement>)}
 
 // 画面で管理する状態
-export interface State extends BaseData.BaseState {
+export type State = BaseData.BaseState & {
     username: UsernameField<'username', string>
 }
 
 // Hook 状態・イベントハンドラを管理
-export interface Hook {
+export type Hook = {
     state: State,
     
     changeUsernameEvent: ChangeUsernameEvent,
@@ -41,7 +41,7 @@ export type IAction =  BaseData.IBaseAction;
 
 // Component
 // 入力Form Component
-export interface FormProps {
+export type FormProps = {
     username: UsernameField<'username', string>,
 
     changeUsernameEvent: ChangeUsernameEvent,

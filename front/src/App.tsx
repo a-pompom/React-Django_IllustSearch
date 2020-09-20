@@ -1,15 +1,20 @@
 import React from 'react';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { HashRouter, Switch, Route, Redirect } from 'react-router-dom';
 
+import { Setting } from 'settings';
+import { Login } from 'Component/Login/ViewLogin';
+import { Signup } from 'Component/Signup/viewSignup';
 
 const App = () =>{
 
     return (
-        <BrowserRouter>
+        <HashRouter>
             <Switch>
-                <Route path="/" children={<div></div>}></Route>
+                <Route exact path="/" children={<Login />}></Route>
+                <Route exact path={Setting.VIEW_PATH.SIGNUP} children={<Signup />}></Route>
+                <Redirect from='*' to='/' />
             </Switch>
-        </BrowserRouter>
+        </HashRouter>
     );
 }
 

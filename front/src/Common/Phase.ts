@@ -25,7 +25,7 @@ export class Phase {
     /**
      * 現在有効なタイマー要素を追加
      * 
-     * @param timerId 追加対象のタイマーID
+     * @param timer 追加対象のタイマーオブジェクト
      */
     public addActiveTimer(timer: NodeJS.Timeout) {
 

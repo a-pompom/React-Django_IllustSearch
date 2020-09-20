@@ -10,16 +10,16 @@ describe('Field name,value,errors属性が取得でき、バリデーション�
     type UsernameField<UsernameFieldName extends FieldName, UsernameValue extends Value> = Field<UsernameFieldName, UsernameValue>
 
     // Fieldの属性値を格納したオブジェクト
-    interface UserInfo {
+    type UserInfo = {
         name: FieldName,
         value: Value,
         label: string
-    }
+    };
     const userInfo: UserInfo = {
         name: 'user.username',
         value: 'userValue',
         label: 'ユーザ名'
-    }
+    };
 
     test('コンストラクタで対応した属性へ属性値が格納されること', () => {
 
