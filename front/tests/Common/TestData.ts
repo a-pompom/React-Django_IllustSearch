@@ -3,80 +3,80 @@ import * as BaseData from 'Common/BaseData';
 import { Field } from 'Common/Field';
 
 // APIからのレスポンス
-export interface GetResponse extends BaseData.BaseAPIResponse {
+export type GetResponse = BaseData.BaseAPIResponse & {
     body: BaseData.BaseAPIResponse['body'] & {
         name: string,
         age: number
 
     }
-}
-export interface PostResponse extends BaseData.BaseAPIResponse {}
+};
+export type PostResponse = BaseData.BaseAPIResponse & {};
 
 // APIパラメータ
-export interface GetAPIParam {
+export type GetAPIParam  ={
     name: string,
     age: number
-}
-export interface PostAPIBody {
+};
+export type PostAPIBody = {
     productName: string,
     price: number
-}
+};
 
-export interface State extends BaseData.BaseState {}
+export type State = BaseData.BaseState & {};
 
 // フィールド
 export type FieldName = 'name' | 'age';
 export type Value = string | number;
-export type nameField<nameFieldName extends FieldName, nameValue extends Value> = Field<nameFieldName, nameValue>
-export type ageField<ageFieldName extends FieldName, ageValue extends Value> = Field<ageFieldName, ageValue>
+export type nameField<nameFieldName = FieldName, nameValue = Value> = Field<nameFieldName, nameValue>
+export type ageField<ageFieldName = FieldName, ageValue = Value> = Field<ageFieldName, ageValue>
 
-export interface ValidatorState extends BaseData.BaseState {
+export type ValidatorState = BaseData.BaseState & {
     name: nameField<'name', string>,
     age: ageField<'age', number>,
     isValid: boolean
-}
+};
 
-export interface GetState extends BaseData.BaseState {
+export type GetState = BaseData.BaseState & {
     actionHisotryList: string[],
     response: GetResponse
-}
-export interface PostState extends BaseData.BaseState {
+};
+export type PostState = BaseData.BaseState & {
     actionHisotryList: string[],
     response: PostResponse
-}
+};
 
 // Action
-interface ChildAction extends BaseData.BaseAction<'CHILD_ACTION'> {
-}
+type ChildAction = BaseData.BaseAction<'CHILD_ACTION'> & {
+};
 
-interface GetSuccessHandlerAction extends BaseData.BaseAction<'GET_SUCCESS_HANDLER'>{ payload: {response: GetResponse }}
-interface GetFailureHandlerAction extends BaseData.BaseAction<'GET_FAILURE_HANDLER'>{ payload: {response: GetResponse }}
-interface PostSuccessHandlerAction extends BaseData.BaseAction<'POST_SUCCESS_HANDLER'>{ payload: {response: PostResponse }}
-interface PostFailureHandlerAction extends BaseData.BaseAction<'POST_FAILURE_HANDLER'>{ payload: {response: PostResponse }}
+type GetSuccessHandlerAction = BaseData.BaseAction<'GET_SUCCESS_HANDLER'> & { payload: {response: GetResponse }};
+type GetFailureHandlerAction = BaseData.BaseAction<'GET_FAILURE_HANDLER'> & { payload: {response: GetResponse }}
+type PostSuccessHandlerAction = BaseData.BaseAction<'POST_SUCCESS_HANDLER'> & { payload: {response: PostResponse }};
+type PostFailureHandlerAction = BaseData.BaseAction<'POST_FAILURE_HANDLER'> & { payload: {response: PostResponse }};
 
 export type IAction = BaseData.IBaseAction | ChildAction | GetSuccessHandlerAction | GetFailureHandlerAction | PostSuccessHandlerAction | PostFailureHandlerAction;
 
-export interface ViewTestForReducerProps {
+export type ViewTestForReducerProps = {
     argState: State,
     argAction: IAction,
     reducer: {(state: State, action: IAction): State}
 };
 
-export interface ViewTestForValidatorProps {
+export type ViewTestForValidatorProps = {
     argState: ValidatorState,
     fieldNames: FieldName[],
     fieldValues: Value[]
-}
+};
 
-export interface ViewTestForGetAPIProps {
+export type ViewTestForGetAPIProps = {
     argState: GetState,
     getPath: string,
     getParam: GetAPIParam,
     getAPI?: BaseData.GetAPI<GetAPIParam, GetResponse>
-}
-export interface ViewTestForPostAPIProps {
+};
+export type ViewTestForPostAPIProps = {
     argState: PostState,
     postPath: string,
     postBody: PostAPIBody,
     postAPI?: BaseData.PostAPI<PostAPIBody, BaseData.BaseAPIResponse>
-}
+};

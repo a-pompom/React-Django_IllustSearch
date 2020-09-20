@@ -38,6 +38,7 @@ export const useLogin = (): LoginData.Hook => {
 
     const history = useHistory();
 
+    // ログインユーザ一覧を取得
     useEffect(() => {
 
         emitGet(

@@ -48,6 +48,7 @@ export const useGetAPI = <GetAPIArg = {}, GetResponse extends BaseData.BaseAPIRe
     /**
      * GET APIリクエストを呼び元で発火
      * 
+     * @param path GET APIリクエスト送信先パス
      * @param getAPIArg GET APIリクエストへ渡す引数オブジェクト
      * @param successHandler リクエスト成功時実行処理
      * @param failureHandler リクエスト失敗時実行処理
@@ -181,6 +182,7 @@ type ValidationHook<State, FieldNames, Values> = {
  * 
  * @param executeValidate 個別バリデーション処理 Stateは相関チェック用にディープコピーしたもの
  * @param validationRequiredfields バリデーションが必要なフィールド名文字列 isValid処理の検証対象となる
+ * @param dispatch reducerを呼び出すためのdispatch関数
  * @return ValidationHook
  */
 export const useValidation = <State, FieldNames extends string, Values >(
@@ -214,7 +216,7 @@ export const useValidation = <State, FieldNames extends string, Values >(
         }
         dispatch(action);
 
-        const isValid = results.filter(result => ! result.isValid).length === 0;
+        const isValid = results.filter((result) => ! result.isValid).length === 0;
         return isValid;
     }
 
@@ -296,10 +298,7 @@ export const useBaseReducer = <State extends BaseData.BaseState, Action extends 
          * @return true-> ベースreducerの対象 false-> 対象外
          */
         const isIBaseAction = (action: BaseData.BaseAction<string>): action is BaseData.IBaseAction => {
-            if (BaseData.I_BASE_ACTIONS.includes(action.type)) {
-                return true;
-            }
-            return false;
+            return BaseData.I_BASE_ACTIONS.includes(action.type);
         }
 
         // ReactはStateが同一のオブジェクトだった場合、再描画しないので、再描画されるようディープコピー

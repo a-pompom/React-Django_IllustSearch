@@ -17,14 +17,10 @@ export const getQueryString = <Param>(param: Param): string => {
         return '';
     }
 
-    let query = '?';
+    const query = '?' + Object.keys(param).map((key) => `${key}=${param[key]}`)
+        .join('&');
 
-    for (let key in param) {
-        query += `${key}=${param[key]}`;
-        query += '&';
-    }
-
-    return query.substring(0, query.length-1);
+    return query;
 }
 
 /**

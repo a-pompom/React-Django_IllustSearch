@@ -47,7 +47,8 @@ class LoginView(views.APIView, APIResponseMixin):
 
         serializer = LoginSerializer(instance=user, many=True)
 
-        return Response({'users': serializer.data}, status=status.HTTP_200_OK)
+        response = self.render_to_success_response('ok', {'users': serializer.data})
+        return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request: Request) -> Response:
         """ ログイン処理 ログインの成否はステータスコードで判定

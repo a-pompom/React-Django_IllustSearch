@@ -81,7 +81,7 @@ describe('baseReducer 各アクションのState更新を検証', () => {
         // GIVEN
 
         // Stateの形式
-        interface State extends BaseData.BaseState {
+        type State = BaseData.BaseState & {
 
             value?: Field<string, any>,
             nestedValue?: {
@@ -95,7 +95,7 @@ describe('baseReducer 各アクションのState更新を検証', () => {
                     ]
                 }
             }
-        }
+        };
 
         // 反映用バリデーション結果 Stateの各要素ごとに定義
         // 1階層/2階層/3階層+配列の要素を取得できるか検証
