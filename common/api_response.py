@@ -1,7 +1,7 @@
 from rest_framework.exceptions import ErrorDetail
-from typing import List
+from typing import List, Dict, Any
 
-from .custom_type import TypeSerializerErrorDict, TypePostErrorDict, TypePostAPIResponse
+from .custom_type import TypeSerializerErrorDict, TypeErrorDict, TypeAPIResponse
 
 class APIResponseMixin:
     """ 
@@ -9,7 +9,7 @@ class APIResponseMixin:
         シリアライザへ格納されたエラーメッセージをもとに、エラーオブジェクトへ整形
     """
 
-    def render_to_success_response(self, message: str) -> TypePostAPIResponse:
+    def render_to_success_response(self, message: str, body: Dict[str, Any]=None) -> TypeAPIResponse:
         """ 処理成功レスポンス 成功メッセージを格納
 
         Parameters
@@ -23,11 +23,18 @@ class APIResponseMixin:
             PostAPI成功メッセージを格納したレスポンス
         """
 
+        if not body:
+            return {
+                'body': {
+                    'message': message
+                }
+            }
+        
         return {
-            'message': message
+            'body': body
         }
 
-    def render_to_error_response(self, message: str, errors: TypeSerializerErrorDict) -> TypePostAPIResponse:
+    def render_to_error_response(self, message: str, errors: TypeSerializerErrorDict) -> TypeAPIResponse:
         """ エラーレスポンスを作成 各フィールドへのエラー内容を格納
 
         Parameters
@@ -43,23 +50,25 @@ class APIResponseMixin:
             PostAPI失敗メッセージと、フィールド単位のエラーメッセージを格納したレスポンス
         """
 
-        api_response_errors: List[TypePostErrorDict] = []
+        api_response_errors: List[TypeErrorDict] = []
 
         # Reactで画面表示しやすい形へ整形
         for field_name, error_details in errors.items():
             api_response_errors.append(
                 {
                     'fieldName': field_name,
-                    'message': self.get_error_message(error_details),
+                    'message': self._get_error_message(error_details),
                 }
             )
 
         return {
-            'message': message,
+            'body': {
+                'message': message
+            },
             'errors': api_response_errors,
         }
 
-    def get_error_message(self, errors: List[ErrorDetail]) -> str:
+    def _get_error_message(self, errors: List[ErrorDetail]) -> str:
         """ ErrorDetailをもとにフィールドへ表示するエラーメッセージ文字列を作成
 
         Parameters
@@ -80,4 +89,3 @@ class APIResponseMixin:
         error_message = ','.join([error for error in errors])
 
         return error_message
-
