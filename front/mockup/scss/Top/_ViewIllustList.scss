@@ -1,0 +1,36 @@
+
+@use "../variable" as Variable;
+@use "../mixin" as Mixin;
+
+.Top {
+    .IllustArea {
+
+        width: 98vw;
+        height: auto;
+
+        margin: 2vh auto;
+
+        .IllustList {
+
+            column-count: 5;
+
+            &__item {
+
+                .Thumbnail {
+                    display: block;
+                    object-fit: contain;
+
+                    max-width: 18vw;
+                    max-height: 50vh;
+
+                    &:hover {
+                        filter: brightness(80%);
+                    }
+                }
+
+                margin: 4vh 1.8vw;
+
+            }
+        }
+    }
+}

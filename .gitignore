@@ -172,3 +172,4 @@ normalize.css
 *css.map
 *.sh
 stream-browserify
+front/mockup/assets/img
