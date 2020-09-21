@@ -1,0 +1,23 @@
+@use "../variable" as Variable;
+@use "../mixin" as Mixin;
+
+.Top {
+    .Header {
+        .Input {
+
+            display: block;
+
+            font-size: 1.8rem;
+
+            background-color: Variable.$white;
+
+            margin-left: 5vw;
+            margin-top: 10px;
+
+            &:focus {
+
+                background-color: Variable.$lightest;
+            }
+        }
+    }
+}

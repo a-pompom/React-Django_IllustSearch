@@ -1,0 +1,40 @@
+@use "../variable" as Variable;
+@use "../mixin" as Mixin;
+
+.Top {
+    .Header {
+
+        @include Mixin.flex-left;
+
+        font-size: 2.2rem;
+        line-height: 1.4;
+        font-weight: bold;
+
+        color: Variable.$lightest;
+
+        padding-top: 9px;
+        padding-bottom: 1vh;
+
+        border-bottom: 2px solid Variable.$lightest;
+
+        &__title {
+            font-size: 2.9rem;
+            margin-left: 2vw;
+        }
+
+        &__function {
+            cursor: pointer;
+
+            margin-left: 5vw;
+            margin-top: 7px;
+        }
+
+        &__user {
+            margin-left: auto;
+            padding-right: 4vw;
+            margin-top: 10px;
+            border-radius: 50%;
+
+        }
+    }
+}

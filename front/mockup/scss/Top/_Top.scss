@@ -1,0 +1,11 @@
+@use "../variable" as Variable;
+@use "../mixin" as Mixin;
+
+@use "./ViewHeader";
+@use "./ViewIllustList";
+.Top {
+    width: 100vw;
+    overflow-x: hidden;
+    height: 100vh;
+    
+}
