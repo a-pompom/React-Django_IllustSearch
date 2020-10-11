@@ -1,5 +1,6 @@
 from rest_framework.exceptions import ErrorDetail
-from typing import List, Dict, Any
+from typing import List, Dict, Any, TypedDict
+from typing_extensions import Protocol
 
 from .custom_type import TypeSerializerErrorDict, TypeErrorDict, TypeAPIResponse
 
@@ -23,6 +24,7 @@ class APIResponseMixin:
             PostAPI成功メッセージを格納したレスポンス
         """
 
+        # 単純な登録処理などでは、成功メッセージのみを返却
         if not body:
             return {
                 'body': {
@@ -40,26 +42,23 @@ class APIResponseMixin:
         Parameters
         ----------
         message : str
-            POST処理失敗メッセージ
+            作成・更新処理失敗メッセージ
         errors : TypeSerializerErrorDict
             フィールド単位でエラーを格納したシリアライザ用エラー辞書
 
         Returns
         -------
-        TypePostAPIResponse
-            PostAPI失敗メッセージと、フィールド単位のエラーメッセージを格納したレスポンス
+        TypeAPIResponse
+            API失敗メッセージと、フィールド単位のエラーメッセージを格納したレスポンス
         """
 
-        api_response_errors: List[TypeErrorDict] = []
-
         # Reactで画面表示しやすい形へ整形
-        for field_name, error_details in errors.items():
-            api_response_errors.append(
-                {
-                    'fieldName': field_name,
-                    'message': self._get_error_message(error_details),
-                }
-            )
+        api_response_errors: List[TypeErrorDict] = [
+            {
+                'fieldName': field_name,
+                'message': self._get_error_message(error_details)
+            } for field_name, error_details in errors.items()
+        ]
 
         return {
             'body': {
@@ -86,6 +85,57 @@ class APIResponseMixin:
         if len(errors) == 1:
             return errors[0]
 
-        error_message = ','.join([error for error in errors])
+        error_message = ', '.join([error for error in errors])
 
         return error_message
+
+    def render_to_failure_response(self, message: str) -> TypeAPIResponse:
+        """ ログイン失敗など、シリアライザに関係しないエラーレスポンスを生成
+
+        Parameters
+        ----------
+        message : str
+            エラーメッセージ
+
+        Returns
+        -------
+        TypeAPIResponse
+            エラ〜メッセージを格納したAPIResponse
+        """
+
+        return {
+                'body': {
+                    'message': message
+                }
+            }
+
+
+class RenderToSuccessResponse(Protocol):
+    def __call__(self, message: str, body: Dict[str, Any]=None) -> TypeAPIResponse: ...
+class RenderToErrorResponse(Protocol):
+    def __call__(self, message: str, errors: TypeSerializerErrorDict) -> TypeAPIResponse: ...
+class RenderToFailureResponse(Protocol):
+    def __call__(self, message: str) -> TypeAPIResponse: ...
+
+class TypeUseApiResponse(TypedDict):
+    """ APIレスポンスを扱うための関数群 """
+    render_to_success_response: RenderToSuccessResponse
+    render_to_error_response: RenderToErrorResponse
+    render_to_failure_response: RenderToFailureResponse
+
+def use_api_response() -> TypeUseApiResponse:
+    """ APIResponseミックスインを関数形式で取得
+
+    Returns
+    -------
+    TypeUseApiResponse
+        APIResponseミックスインのメソッドを格納したディクショナリ
+    """
+
+    mixin = APIResponseMixin()
+
+    return {
+        'render_to_success_response': mixin.render_to_success_response,
+        'render_to_error_response': mixin.render_to_error_response,
+        'render_to_failure_response': mixin.render_to_failure_response,
+    }
