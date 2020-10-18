@@ -10,7 +10,7 @@ class APIResponseMixin:
         シリアライザへ格納されたエラーメッセージをもとに、エラーオブジェクトへ整形
     """
 
-    def render_to_success_response(self, message: str, body: Dict[str, Any]=None) -> TypeAPIResponse:
+    def render_to_success_response(self, message: str='ok', body: Dict[str, Any]=None) -> TypeAPIResponse:
         """ 処理成功レスポンス 成功メッセージを格納
 
         Parameters
@@ -80,10 +80,6 @@ class APIResponseMixin:
         str
             各エラーメッセージをカンマ区切りで結合したエラーメッセージ文字列
         """
-
-        # 単一要素から成る場合は結合は不要
-        if len(errors) == 1:
-            return errors[0]
 
         error_message = ', '.join([error for error in errors])
 
