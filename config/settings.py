@@ -1,5 +1,9 @@
 import os
 
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'common.exception_handler.handle_exception',
+}
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -14,6 +18,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 INSTALLED_APPS = [
+    'app_login.apps.AppLoginConfig',
+    'app_illust_list.apps.AppIllustListConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,7 +28,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'app_login.apps.AppLoginConfig',
 ]
 
 MIDDLEWARE = [

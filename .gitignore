@@ -167,9 +167,10 @@ thumb
 sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/react
-app_login/migrations
+*/migrations
 normalize.css
 *css.map
 *.sh
 stream-browserify
 front/mockup/assets/img
+
