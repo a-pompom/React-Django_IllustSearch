@@ -3,6 +3,7 @@ from app_login.models import User
 from .category import Category
 
 class Illust(models.Model):
+    """ 資料用イラスト """
     class Meta:
         db_table = 't_illust'
 

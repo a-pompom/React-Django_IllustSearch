@@ -3,7 +3,9 @@ from rest_framework import serializers
 class IllustDetailSerializer(serializers.Serializer):
     """
     イラスト詳細Serizalizer
+
     Attributes
+    ----------
     path : str
         画像パス
     categories : List[str]

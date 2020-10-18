@@ -1,5 +1,3 @@
-from app_login.models import User
-from django.shortcuts import render
 from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -8,9 +6,9 @@ from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
 from common.api_response import APIResponseMixin
-from common.user_handler import LoginUserHandlerMixin
+from common.login_user_handler import LoginUserHandlerMixin
 
-class CategoryView(views.APIView, APIResponseMixin, LoginUserHandlerMixin):
+class CategoryView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
     """ カテゴリAPI用View """
 
     def get(self, request: Request) -> Response:
@@ -39,7 +37,7 @@ class CategoryView(views.APIView, APIResponseMixin, LoginUserHandlerMixin):
             status=status.HTTP_200_OK
         )
     
-class IllustView(views.APIView, APIResponseMixin, LoginUserHandlerMixin):
+class IllustView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
     """ イラストAPI用View """
 
     def get(self, request: Request) -> Response:

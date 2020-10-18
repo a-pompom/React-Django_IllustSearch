@@ -3,7 +3,9 @@ from rest_framework import serializers
 class CategorySerializer(serializers.Serializer):
     """
     カテゴリSerizalizer
+
     Attributes
+    ----------
     category_name : str
         カテゴリ名
     """

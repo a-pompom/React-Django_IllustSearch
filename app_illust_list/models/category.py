@@ -2,6 +2,8 @@ from django.db import models
 from app_login.models import User
 
 class Category(models.Model):
+    """ イラストのカテゴリ """
+
     class Meta:
         db_table = 'm_category'
 
