@@ -34,6 +34,9 @@ class User(AbstractBaseUser):
         null=True
     )
 
+    def get_id(self) -> int:
+        return int(self.pk)
+
     def __str__(self):
 
         return f'username: {self.username}'

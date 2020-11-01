@@ -16,6 +16,7 @@ from .serializer import LoginSerializer, SignupSerializer
 from common import custom_type, validator
 from common.validator import is_unique_model
 from common.api_response import APIResponseMixin
+from common.login_user_handler import LoginUserHandlerMixin
 
 
 class LoginView(views.APIView, APIResponseMixin):
@@ -112,9 +113,6 @@ class SignUpView(views.APIView, APIResponseMixin):
 
         # 登録失敗
         if not serializer.is_valid():
-            print('not valid...')
-            print(serializer.data)
-            print(serializer.errors)
             response = self.render_to_error_response('登録に失敗しました。', cast(custom_type.TypeSerializerErrorDict, serializer.errors))
 
             return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -158,3 +156,22 @@ class UserValidateUniqueView(views.APIView, APIResponseMixin):
         }
 
         return Response(self.render_to_error_response('error', error_response), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+class AuthenticationView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
+    """ ログインが必要な画面で前処理として呼ばれる認証用APIView """
+
+    def get(self, request: Request) -> Response:
+        """ 認証済みか判定 未認証の場合は、ミックスインにより、401レスポンスが返される
+
+        Parameters
+        ----------
+        request : Request
+            Request
+
+        Returns
+        -------
+        Response
+            ログイン済み-> 200, 未ログイン-> 401
+        """
+
+        return Response(self.render_to_success_response('OK'), status=status.HTTP_200_OK)
