@@ -15,7 +15,7 @@ export type ErrorObject = {
 
 export type BaseAPIResponse = {
     body: {
-        message: string,
+        message?: string,
         errors?: ErrorObject[]
     },
     status: StatusCode,

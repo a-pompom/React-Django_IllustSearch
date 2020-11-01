@@ -1,4 +1,5 @@
 import * as BaseData from 'Common/BaseData';
+import Cookies from 'js-cookie';
 
 /**
  * APIからリソースを取得
@@ -9,11 +10,19 @@ import * as BaseData from 'Common/BaseData';
  */
 export const get = async <Response>(url: string): Promise<Response> => {
 
-    const response = await fetch(url)
+    // クッキーを利用可能とし、APIを利用できるようCORSでリクエストを送信
+    const requestOption: RequestInit = {
+        method: 'get',
+        credentials: 'include',
+        mode: 'cors',
+    }
+
+    const response = await fetch(url, requestOption);
     const responseJSON = await response.json();
     return {
         ...responseJSON,
-        ok: response.ok
+        ok: response.ok,
+        status: response.status,
     };
 };
 
@@ -27,17 +36,26 @@ export const get = async <Response>(url: string): Promise<Response> => {
  */
 export const post = async <Body, Response extends BaseData.BaseAPIResponse>(url: string, body: Body): Promise<Response> => {
 
-    const options = {
+    const requestOption: RequestInit = {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: new Headers({'Accept': 'application/json','content-type': 'application/json'})
+        headers: new Headers(
+            {
+                'Accept': 'application/json',
+                'content-type': 'application/json',
+                'X-CSRFToken': Cookies.get('csrftoken'),
+            }
+        ),
+        credentials: 'include',
+        mode: 'cors',
     };
 
-    const response = await fetch(url, options)
+    const response = await fetch(url, requestOption)
     const responseJSON = await response.json();
 
     return {
         ...responseJSON,
-        ok: response.ok
+        ok: response.ok,
+        status: response.status,
     };
 };

@@ -4,9 +4,15 @@ export const Setting = {
 
     // 各APIへのパス
     API_PATH: {
-        LOGIN: 'login/',
-        SIGNUP: 'login/signup/',
-        VALIDATE_UNIQUE_USER: 'login/validate/user',
+        AUTH: {
+            LOGIN: 'login/',
+            SIGNUP: 'login/signup/',
+            AUTH_CHECK: 'login/auth_check/',
+            VALIDATE_UNIQUE_USER: 'login/validate/user',
+        },
+        ILLUST: {
+            LIST: 'illust/illust_list/',
+        }
     },
 
     // 画面コンポーネントへのパス
