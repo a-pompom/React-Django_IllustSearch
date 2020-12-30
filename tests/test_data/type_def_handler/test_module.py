@@ -1,0 +1,1 @@
+user = {"username": "pompom-purin", "is_authenticated": False}

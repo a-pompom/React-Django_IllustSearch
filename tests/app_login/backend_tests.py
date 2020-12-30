@@ -1,5 +1,3 @@
-import pytest
-
 from .fixture import *
 
 from app_login.backend import AuthBackend
