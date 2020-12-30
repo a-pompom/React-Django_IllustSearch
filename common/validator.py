@@ -1,6 +1,7 @@
-from django.db.models.base import ModelBase
 import re
 from typing import Dict, Any
+
+from django.db.models.base import ModelBase
 
 def is_valid_min_length(value: str, length: int) -> bool:
     """ 最小文字数チェック

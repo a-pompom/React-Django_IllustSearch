@@ -1,10 +1,9 @@
 from rest_framework.exceptions import ErrorDetail
-from typing import List, Dict, Any, TypedDict
-from typing_extensions import Protocol
+from typing import List, Dict, Any
 
 from .custom_type import TypeSerializerErrorDict, TypeErrorDict, TypeAPIResponse
 
-class APIResponseMixin:
+class APIResponseHandler:
     """ 
     Reactで処理しやすいレスポンスへ整形するためのミックスイン
         シリアライザへ格納されたエラーメッセージをもとに、エラーオブジェクトへ整形
@@ -105,33 +104,4 @@ class APIResponseMixin:
                 }
             }
 
-
-class RenderToSuccessResponse(Protocol):
-    def __call__(self, message: str, body: Dict[str, Any]=None) -> TypeAPIResponse: ...
-class RenderToErrorResponse(Protocol):
-    def __call__(self, message: str, errors: TypeSerializerErrorDict) -> TypeAPIResponse: ...
-class RenderToFailureResponse(Protocol):
-    def __call__(self, message: str) -> TypeAPIResponse: ...
-
-class TypeUseApiResponse(TypedDict):
-    """ APIレスポンスを扱うための関数群 """
-    render_to_success_response: RenderToSuccessResponse
-    render_to_error_response: RenderToErrorResponse
-    render_to_failure_response: RenderToFailureResponse
-
-def use_api_response() -> TypeUseApiResponse:
-    """ APIResponseミックスインを関数形式で取得
-
-    Returns
-    -------
-    TypeUseApiResponse
-        APIResponseミックスインのメソッドを格納したディクショナリ
-    """
-
-    mixin = APIResponseMixin()
-
-    return {
-        'render_to_success_response': mixin.render_to_success_response,
-        'render_to_error_response': mixin.render_to_error_response,
-        'render_to_failure_response': mixin.render_to_failure_response,
-    }
+api_response_handler = APIResponseHandler()
