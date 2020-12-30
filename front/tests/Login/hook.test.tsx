@@ -207,7 +207,7 @@ const getChangeViewEvent = (container: HTMLDivElement) => {
 const getUsersAPIInfo = () => {
 
     return getAPIInfo<null, LoginData.GetResponse>(
-        `${Setting.API_ENDPOINT}${Setting.API_PATH.LOGIN}`,
+        `${Setting.API_ENDPOINT}${Setting.API_PATH.AUTH.LOGIN}`,
         'get',
         {
             ...getSimpleOkResponse(),
@@ -230,7 +230,7 @@ const getUsersAPIInfo = () => {
 const getLoginlAPIInfo = (body: LoginData.PostBody, response: BaseData.BaseAPIResponse=getSimpleOkResponse()) => {
 
     return getAPIInfo<LoginData.PostBody, BaseData.BaseAPIResponse>(
-        `${Setting.API_ENDPOINT}${Setting.API_PATH.LOGIN}`,
+        `${Setting.API_ENDPOINT}${Setting.API_PATH.AUTH.LOGIN}`,
         'post',
         response,
         body

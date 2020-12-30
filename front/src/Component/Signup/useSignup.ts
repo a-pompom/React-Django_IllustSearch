@@ -56,7 +56,7 @@ export const useSignup = (): SignupData.Hook => {
 
         // 重複チェック 重複している場合はエラーメッセージを表示
         emitUserUniquePost(
-            Setting.API_PATH.VALIDATE_UNIQUE_USER,
+            Setting.API_PATH.AUTH.VALIDATE_UNIQUE_USER,
             {username: event.target.value}, 
             null,
             {
@@ -79,7 +79,7 @@ export const useSignup = (): SignupData.Hook => {
         }
 
         emitPost(
-            Setting.API_PATH.SIGNUP,
+            Setting.API_PATH.AUTH.SIGNUP,
             {username: state.username.value},
             {
                 handler: handleSuccessUserCreate,

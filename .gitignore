@@ -173,4 +173,4 @@ normalize.css
 *.sh
 stream-browserify
 front/mockup/assets/img
-
+.vscode/

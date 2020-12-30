@@ -178,7 +178,7 @@ describe('ユーザ登録カスタムフックのテスト', () => {
 const getValidateUniqueUserAPIInfo = (response: BaseData.BaseAPIResponse, body: SignupData.PostBody) => {
 
     return getAPIInfo<SignupData.PostBody, BaseData.BaseAPIResponse>(
-        `${Setting.API_ENDPOINT}${Setting.API_PATH.VALIDATE_UNIQUE_USER}`,
+        `${Setting.API_ENDPOINT}${Setting.API_PATH.AUTH.VALIDATE_UNIQUE_USER}`,
         'post',
         response,
         body
@@ -193,7 +193,7 @@ const getValidateUniqueUserAPIInfo = (response: BaseData.BaseAPIResponse, body: 
 const getSignupAPIInfo = (response: BaseData.BaseAPIResponse, body: SignupData.PostBody) => {
 
     return getAPIInfo<SignupData.PostBody, BaseData.BaseAPIResponse>(
-        `${Setting.API_ENDPOINT}${Setting.API_PATH.SIGNUP}`,
+        `${Setting.API_ENDPOINT}${Setting.API_PATH.AUTH.SIGNUP}`,
         'post',
         response,
         body
