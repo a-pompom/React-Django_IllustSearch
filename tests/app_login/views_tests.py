@@ -36,8 +36,8 @@ class TestLoginView:
 
             return props['client'].get(props['login_path'])
 
-        """ ログインAPIへのGETリクエスト """
         def test_ステータス200が返ること(self, props: Props):
+            """ ログインAPIへのGETリクエスト """
 
             # WHEN
             response = self.get_response(props)

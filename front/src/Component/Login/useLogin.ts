@@ -42,7 +42,7 @@ export const useLogin = (): LoginData.Hook => {
     useEffect(() => {
 
         emitGet(
-            Setting.API_PATH.LOGIN,
+            Setting.API_PATH.AUTH.LOGIN,
             null, 
             {
                 handler: handleUserGetSuccess,
@@ -79,7 +79,7 @@ export const useLogin = (): LoginData.Hook => {
 
         // POST処理実行
         emitPost(
-            Setting.API_PATH.LOGIN,
+            Setting.API_PATH.AUTH.LOGIN,
             {username: state.username.value},
             {
                 handler: handlePostSuccess,

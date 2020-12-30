@@ -1,11 +1,14 @@
+from django.db import models
 from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
+from typing import cast
 
 from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
 from common.api_response import APIResponseMixin
+from common.request.pagination_handler import PaginationHandlerMixin
 from common.login_user_handler import LoginUserHandlerMixin
 
 class CategoryView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
@@ -37,7 +40,7 @@ class CategoryView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
             status=status.HTTP_200_OK
         )
     
-class IllustView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
+class IllustView(APIResponseMixin, PaginationHandlerMixin, LoginUserHandlerMixin, views.APIView):
     """ イラストAPI用View """
 
     def get(self, request: Request) -> Response:
@@ -54,13 +57,20 @@ class IllustView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
             イラスト一覧を格納したレスポンス
         """
 
-        illust_list = Illust.objects.filter(user_id = self.get_login_user_id(request)).order_by('-id')
+        query = {
+            'id__gt': 2,
+            'user_id': self.get_login_user_id(request),
+        }
+
+        pagination = self.get_current_pagination(Illust, query, 5, ('-id',))
+        illust_list = pagination['result_list']
 
         return Response(
             self.render_to_success_response(
                 'ok',
                 {
-                    'illust_list': IllustSerializer(instance=illust_list, many=True).data
+                    'illust_list': IllustSerializer(instance=illust_list, many=True).data,
+                    'has_next': pagination['has_next'],
                 }
             ),
             status=status.HTTP_200_OK

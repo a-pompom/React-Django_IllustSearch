@@ -21,6 +21,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 INSTALLED_APPS = [
+    'app_common.apps.AppCommonConfig',
     'app_login.apps.AppLoginConfig',
     'app_illust_list.apps.AppIllustListConfig',
     'corsheaders',
@@ -127,3 +128,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+
+# ページネーション
+RECORDS_PER_PAGE = 5
