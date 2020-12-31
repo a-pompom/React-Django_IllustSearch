@@ -1,5 +1,4 @@
-from typing import TypedDict, Union, cast
-from typing_extensions import Protocol
+from typing import Union, cast
 
 from django.contrib.auth.models import AnonymousUser
 from rest_framework import views
@@ -8,9 +7,8 @@ from rest_framework.request import Request
 from app_login.models import User
 from common.exception_handler import UnAuthorizedException
 
-class LoginUserHandlerMixin():
-    """ ログインユーザ情報を扱うためのミックスイン
-    """
+class LoginUserHandler:
+    """ ログインユーザに関連する処理を扱うためのハンドラ"""
 
     def get_login_user_id(self, request: Request) -> Union[None, int]:
         """ ログインユーザの識別子を取得
@@ -34,6 +32,10 @@ class LoginUserHandlerMixin():
         user = cast(User, request.user)
         return user.get_id()
 
+
+class LoginRequiredMixin:
+    """ ログイン確認のための前処理を実行するためのミックスイン """
+
     def initial(self, request: Request, *args, **kwargs):
         """ ログイン済か判定
 
@@ -50,31 +52,11 @@ class LoginUserHandlerMixin():
 
         # 未ログイン
         # APIViewからEXCEPTION_HANDLERが呼ばれる
-        if self.get_login_user_id(request) is None:
+        if login_user_handler.get_login_user_id(request) is None:
             raise UnAuthorizedException()
 
         # APIViewのinitialメソッドでリクエストを処理
         cast(views.APIView, super()).initial(request, *args, **kwargs)
 
 
-class GetLoginUserId(Protocol):
-    def __call__(self, request: Request) -> Union[None, int]: ...
-
-class TypeUseLoginUserHandler(TypedDict):
-    """ログインユーザハンドラを扱うための関数群 """
-    get_login_user_id: GetLoginUserId
-
-def use_login_user_handler() -> TypeUseLoginUserHandler:
-    """ ログインユーザハンドラミックスインを関数形式で取得
-
-    Returns
-    -------
-    TypeUseLoginUserHandler
-        ログインユーザハンドラミックスインのメソッドを格納したディクショナリ
-    """
-
-    mixin = LoginUserHandlerMixin()
-
-    return {
-        'get_login_user_id': mixin.get_login_user_id
-    }
+login_user_handler = LoginUserHandler()

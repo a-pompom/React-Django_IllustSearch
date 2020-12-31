@@ -6,7 +6,7 @@ from rest_framework import status, views
 from rest_framework.request import Request,HttpRequest
 from rest_framework.response import Response
 
-from common.login_user_handler import LoginUserHandlerMixin
+from common.login_user_handler import LoginRequiredMixin
 
 from app_login.models import User
 
@@ -38,7 +38,7 @@ class DataGetLoginUserId:
         return self._get_param(request, expected)
 
 
-class MockView(LoginUserHandlerMixin, views.APIView):
+class MockView(LoginRequiredMixin, views.APIView):
     """ MixinからViewのメソッドを呼び出しているので、仲介用のテストViewを作成 """
 
     def __init__(self, user: Union[AbstractBaseUser, AnonymousUser]):
@@ -46,6 +46,7 @@ class MockView(LoginUserHandlerMixin, views.APIView):
 
     def get(self, request: Request) -> Response:
         return Response(request.user, status=status.HTTP_200_OK)
+
 
 class DataInitial:
 
@@ -81,6 +82,7 @@ class DataInitial:
         view = MockView(user)
 
         return self._get_param(view, self._get_request(user))
+
 
 data_get_login_user_id = DataGetLoginUserId()
 data_get_initial = DataInitial()

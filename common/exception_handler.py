@@ -4,14 +4,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
-from .api_response import use_api_response
+from .api_response import api_response_handler
 from config.messages import messages
 
 class APIException(Exception):
     """ API例外 """
 
+
 class UnAuthorizedException(APIException):
     """ 未ログイン """
+
 
 class TypeExceptionContext(TypedDict):
     """ 例外送出時点のViewコンテキスト """
@@ -19,6 +21,7 @@ class TypeExceptionContext(TypedDict):
     args: Tuple[Any]
     kwargs: Dict[str, Any]
     request: Request
+
 
 def handle_exception(exception: Exception, context: TypeExceptionContext) -> Union[Response, None]:
     """ 例外に応じたAPIResponseを生成
@@ -36,11 +39,9 @@ def handle_exception(exception: Exception, context: TypeExceptionContext) -> Uni
         例外クラスに応じたAPIResponse
     """
 
-    response_handler = use_api_response()['render_to_failure_response']
-
     # 未ログイン
     if isinstance(exception, UnAuthorizedException):
         return Response(
-            response_handler(messages['common']['error']['unauthorized'])
+            api_response_handler.render_to_failure_response(messages['common']['error']['unauthorized'])
             , status=HTTP_401_UNAUTHORIZED
         )
