@@ -1,58 +1,45 @@
 import pytest
 from rest_framework import status
-from common.login_user_handler import LoginUserHandlerMixin
+from common.login_user_handler import login_user_handler, LoginRequiredMixin
 
 from .login_user_handler_data import data_get_login_user_id, data_get_initial
 from common.exception_handler import UnAuthorizedException
 
 class TestLoginUserHandler:
-    """ ログインユーザハンドラ テストコード
-    """
 
-    class TestGetLoginUserId:
+    class Test__get_login_user_id:
 
-        def test_リクエストのユーザからユーザIDが取得できること(self):
-
+        def test__specified_user_request(self):
             # GIVEN
-            sut = LoginUserHandlerMixin()
+            sut = login_user_handler
             request, expected = data_get_login_user_id.get_specified_user_request()
-
             # WHEN
             actual = sut.get_login_user_id(request)
-
             # THEN
             assert actual == expected
 
-        def test_リクエストの匿名ユーザからNoneが取得できること(self):
-
+        def test__anonymous_user_request(self):
             # GIVEN
-            sut = LoginUserHandlerMixin()
+            sut = login_user_handler
             request, expected = data_get_login_user_id.get_anonymous_user_request()
-
             # WHEN
             actual = sut.get_login_user_id(request)
-
             # THEN
             assert actual is expected
 
-    class TestInitial:
+    class Test__initial:
 
-        def test_ログイン済ユーザでinitialを実行するとNoneが得られること(self):
-            
+        def test__specified_user_request(self):
             # GIVEN
             view, request = data_get_initial.get_specified_user_request()
-
             # WHEN
             actual = view.initial(request)
-
             # THEN
             assert actual is None
 
-        def test_未ログインユーザでinitialを実行するとUnAuthorizedExceptionが送出されること(self):
-
+        def test__anonymous_user_request(self):
             # GIVEN
             view, request = data_get_initial.get_anonymous_user_request()
-
             # THEN
             with pytest.raises(UnAuthorizedException):
                 # WHEN

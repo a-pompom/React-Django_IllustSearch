@@ -39,13 +39,14 @@ class DataRenderToSuccessResponse:
         })
 
 
+ParamErrorResponseType = Tuple[str, TypeSerializerErrorDict, TypeAPIResponse]
+
 class DataRenderToErrorResponse:
 
     # メッセージ, 整形用エラーオブジェクト, 期待結果
-    ParamType = Tuple[str, TypeSerializerErrorDict, TypeAPIResponse]
     message = '入力内容に誤りがあります。'
 
-    def get_params(self, errors: TypeSerializerErrorDict, expected_errors: List[TypeErrorDict]) -> ParamType:
+    def get_params(self, errors: TypeSerializerErrorDict, expected_errors: List[TypeErrorDict]) -> ParamErrorResponseType:
         return (
             self.message,
             errors,
@@ -57,7 +58,7 @@ class DataRenderToErrorResponse:
             }
         )
 
-    def get_single_field_error(self) -> ParamType:
+    def get_single_field_error(self) -> ParamErrorResponseType:
 
         field_name = 'username'
         error_message = 'ユーザ名を入力してください。'
@@ -74,7 +75,7 @@ class DataRenderToErrorResponse:
 
         return self.get_params(errors, expected_errors)
 
-    def get_comma_separated_field_error(self) -> ParamType:
+    def get_comma_separated_field_error(self) -> ParamErrorResponseType:
 
         field_name = 'age'
         error_messages = ['数値を入力してください。', '年齢は0以上の整数を入力してください。']
@@ -91,7 +92,7 @@ class DataRenderToErrorResponse:
 
         return self.get_params(errors, expected_errors)
 
-    def get_multiple_field_error(self) -> ParamType:
+    def get_multiple_field_error(self) -> ParamErrorResponseType:
 
         field_name_list = ['password', 'confirmPassword']
         error_messages = [

@@ -1,81 +1,59 @@
-from common.api_response import *
+import pytest
 
-from .api_response_data import data_render_success_response, data_render_to_error_response, data_render_to_failure_response
+from common.api_response import api_response_handler
+from .api_response_data import *
 
 class TestAPIResponse:
 
-    class TestRenderToSuccessResponse:
-        """ 成功APIレスポンス """
+    class Test__render_to_success_response:
 
-        def test_メッセージのみを受け取るとbodyへメッセージが格納されたレスポンスが得られること(self):
+        def test__body_from_message(self):
 
             # GIVEN
-            sut = APIResponseMixin()
+            sut = api_response_handler
             message, body, expected = data_render_success_response.get_only_message()
-
             # WHEN
             actual = sut.render_to_success_response(message)
-
             # THEN
             assert actual == expected
 
-        def test_bodyを受け取るとbodyをディクショナリへ格納したレスポンスが得られること(self):
+        def test_response_from_body(self):
 
             # GIVEN
-            sut = APIResponseMixin()
+            sut = api_response_handler
             message, body, expected = data_render_success_response.get_response_with_body()
-
             # WHEN
             actual = sut.render_to_success_response(body=body)
-
             # THEN
             assert actual == expected
 
-    class TestRenderToErrorResponse:
+    class Test__render_to_error_response:
 
-        def test_単一のフィールドエラーが得られること(self):
+        @pytest.mark.parametrize(
+            'params',
+            [
+                pytest.param(data_render_to_error_response.get_single_field_error(), id='single_field_error'),
+                pytest.param(data_render_to_error_response.get_comma_separated_field_error(), id='comma_separated_field_error'),
+                pytest.param(data_render_to_error_response.get_multiple_field_error(), id='multiple_field_error'),
+            ]
+        )
+        def test__get_error_response(self, params: ParamErrorResponseType):
             # GIVEN
-            sut = APIResponseMixin()
-            message, errors, expected = data_render_to_error_response.get_single_field_error()
-
+            sut = api_response_handler
+            message, errors, expected = params
             # WHEN
             actual = sut.render_to_error_response(message, errors)
-
             # THEN
             assert actual == expected
 
-        def test_複数メッセージがカンマ区切りで結合されること(self):
-            # GIVEN
-            sut = APIResponseMixin()
-            message, errors, expected = data_render_to_error_response.get_comma_separated_field_error()
-
-            # WHEN
-            actual = sut.render_to_error_response(message, errors)
-
-            # THEN
-            assert actual == expected
-
-        def test_複数フィールドの複数メッセージを格納したレスポンスが取得できること(self):
-            # GIVEN
-            sut = APIResponseMixin()
-            message, errors, expected = data_render_to_error_response.get_multiple_field_error()
-
-            # WHEN
-            actual = sut.render_to_error_response(message, errors)
-
-            # THEN
-            assert actual == expected
-
-    class TestRenderToFailureResponse:
+    class Test__render_to_failure_response:
         
-        def test_失敗メッセージがbodyへ格納されること(self):
+        def test__get_failure_response(self):
 
             # GIVEN
-            sut = APIResponseMixin()
+            sut = api_response_handler
             message, expected = data_render_to_failure_response.get_failure()
-
             # WHEN
             actual = sut.render_to_failure_response(message)
-
             # THEN
             assert actual == expected
