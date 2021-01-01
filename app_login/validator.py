@@ -1,5 +1,6 @@
+from django.db.models.base import ModelBase
 from rest_framework.exceptions import ValidationError
-from typing import Dict
+from typing import Dict, cast
 
 from common import validator
 from .models import User
