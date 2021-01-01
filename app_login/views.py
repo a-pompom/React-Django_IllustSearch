@@ -1,7 +1,6 @@
 from rest_framework.exceptions import ErrorDetail
 from common.custom_type import TypeSerializerErrorDict
 from django.contrib.auth import login
-from django.db import models
 from typing import cast
 
 from rest_framework import status, views
@@ -13,13 +12,13 @@ from .exception import LoginFailureException
 from .models import User
 from .serializer import LoginSerializer, SignupSerializer
 
-from common import custom_type, validator
+from common import custom_type
 from common.validator import is_unique_model
-from common.api_response import APIResponseMixin
-from common.login_user_handler import LoginUserHandlerMixin
+from common.api_response import api_response_handler
+from common.login_user_handler import LoginRequiredMixin
 
 
-class LoginView(views.APIView, APIResponseMixin):
+class LoginView(views.APIView):
     """ ログインAPI用View """
 
     def get(self, request: Request) -> Response:
@@ -48,7 +47,7 @@ class LoginView(views.APIView, APIResponseMixin):
 
         serializer = LoginSerializer(instance=user, many=True)
 
-        response = self.render_to_success_response('ok', {'users': serializer.data})
+        response = api_response_handler.render_to_success_response('ok', {'users': serializer.data})
         return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request: Request) -> Response:
@@ -85,15 +84,15 @@ class LoginView(views.APIView, APIResponseMixin):
         # ログイン失敗
         except LoginFailureException as ex:
 
-            return Response(self.render_to_error_response('ログインに失敗しました。', ex.errors), status=status.HTTP_401_UNAUTHORIZED)
+            return Response(api_response_handler.render_to_error_response('ログインに失敗しました。', ex.errors), status=status.HTTP_401_UNAUTHORIZED)
 
         # 認証処理で得られたユーザでセッションを発行
         login(request, user, 'app_login.backend.AuthBackend')
 
         # ログイン成功
-        return Response(self.render_to_success_response('ログイン成功。'), status=status.HTTP_200_OK)
+        return Response(api_response_handler.render_to_success_response('ログイン成功。'), status=status.HTTP_200_OK)
 
-class SignUpView(views.APIView, APIResponseMixin):
+class SignUpView(views.APIView):
     """ ユーザ登録API用View """
 
     def post(self, request: Request) -> Response:
@@ -113,7 +112,7 @@ class SignUpView(views.APIView, APIResponseMixin):
 
         # 登録失敗
         if not serializer.is_valid():
-            response = self.render_to_error_response('登録に失敗しました。', cast(custom_type.TypeSerializerErrorDict, serializer.errors))
+            response = api_response_handler.render_to_error_response('登録に失敗しました。', cast(custom_type.TypeSerializerErrorDict, serializer.errors))
 
             return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
@@ -124,10 +123,10 @@ class SignUpView(views.APIView, APIResponseMixin):
         user.save()
 
         # 登録成功
-        response = self.render_to_success_response('登録しました。')
+        response = api_response_handler.render_to_success_response('登録しました。')
         return Response(response, status=status.HTTP_200_OK)
 
-class UserValidateUniqueView(views.APIView, APIResponseMixin):
+class UserValidateUniqueView(views.APIView):
     """ ユーザがユニークかフロントからのリクエストで検証するためのView """
 
     def post(self, request: Request) -> Response:
@@ -148,16 +147,16 @@ class UserValidateUniqueView(views.APIView, APIResponseMixin):
 
         # ユニーク
         if is_unique_model(User, {'username': username}):
-            return Response(self.render_to_success_response('OK'), status=status.HTTP_200_OK)
+            return Response(api_response_handler.render_to_success_response('OK'), status=status.HTTP_200_OK)
 
         # ユニークでない
         error_response: TypeSerializerErrorDict = {
             'username': [ErrorDetail('ユーザ名は既に使用されています。')]
         }
 
-        return Response(self.render_to_error_response('error', error_response), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return Response(api_response_handler.render_to_error_response('error', error_response), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-class AuthenticationView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
+class AuthenticationView(LoginRequiredMixin, views.APIView):
     """ ログインが必要な画面で前処理として呼ばれる認証用APIView """
 
     def get(self, request: Request) -> Response:
@@ -174,4 +173,4 @@ class AuthenticationView(APIResponseMixin, LoginUserHandlerMixin, views.APIView)
             ログイン済み-> 200, 未ログイン-> 401
         """
 
-        return Response(self.render_to_success_response('OK'), status=status.HTTP_200_OK)
+        return Response(api_response_handler.render_to_success_response('OK'), status=status.HTTP_200_OK)
