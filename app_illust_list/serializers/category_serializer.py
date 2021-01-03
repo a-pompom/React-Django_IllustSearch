@@ -13,5 +13,7 @@ class CategorySerializer(serializers.Serializer):
     # カテゴリ名
     category_name = serializers.CharField()
 
+    user_id = serializers.CharField()
+
 class CategoryListSerializer(serializers.ListSerializer):
     child = CategorySerializer()

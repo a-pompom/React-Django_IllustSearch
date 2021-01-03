@@ -32,6 +32,32 @@ class TestCategoryView:
             assert actual.status_code == HTTP_200_OK
             assert actual.data == expected
 
+    class Test__post:
+
+        @pytest.mark.parametrize(
+            'view_request_params',
+            [
+                pytest.param(data_category_view.get_single_category(), id='simple')
+            ],
+            indirect=['view_request_params']
+        )
+        def test__create_category(self, view_request_params: ParamViewRequestType):
+            # GIVEN
+            client, path, username, _, expected = view_request_params
+            # WHEN
+            client.login(username=username)
+            actual = client.post(path, {'category_name': '実写', 'user_id': 1})
+            print(expected)
+            # THEN
+            assert actual.status_code == HTTP_200_OK
+            assert actual.data == expected
+
+        def test__empty(self):
+            pass
+
+        def test__duplicate(self):
+            pass
+
 
 # @pytest.mark.django_db(transaction=False)
 # class TestIllustView(TestView):

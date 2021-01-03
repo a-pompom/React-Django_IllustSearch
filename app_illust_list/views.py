@@ -2,6 +2,7 @@ from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from app_login.models import User
 from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
@@ -35,6 +36,27 @@ class CategoryView(LoginRequiredMixin, views.APIView):
                 'ok',
                 {
                     'category_list': CategorySerializer(instance=category_list, many=True).data
+                }
+            ),
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request: Request) -> Response:
+        
+        category_serializer = CategorySerializer(data=request.data)
+        category_serializer.is_valid()
+        user = User.objects.get(id=category_serializer.validated_data['user_id'])
+        category = Category(
+            category_name=category_serializer.validated_data['category_name'],
+            user_id=user,
+        )
+        category.save()
+
+        return Response(
+            api_response_handler.render_to_success_response(
+                'ok',
+                {
+                    'category': category_serializer.data
                 }
             ),
             status=status.HTTP_200_OK

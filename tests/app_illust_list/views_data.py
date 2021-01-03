@@ -51,6 +51,22 @@ class DataCategoryView:
 
         return self._get_get_param(client, login_username, [[user_login, user_not_login], category_list], expected)
 
+    def get_single_category(self):
+        client = APIClient()
+        login_username = 'ポムポム'
+
+        # User
+        user_login = User(pk=1, username=login_username)
+
+        expected: TypeAPIResponse = {
+            'body': {
+                'category': {'category_name': '実写', 'user_id': '1'}
+            }
+        }
+
+        return self._get_get_param(client, login_username, [[user_login]], expected)
+
+
 # class DataIllustView(DataViewMixin):
 
 #     # リクエスト送信用APIクライアント, APIパス, ログインユーザ名, 期待結果
