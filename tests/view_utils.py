@@ -1,26 +1,15 @@
-from typing import List, Tuple
+from typing import List, Tuple, TypedDict, Optional
 
-from django.db import models
 from rest_framework.test import APIClient
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
 from common.custom_type import TypeAPIResponse
 from config.messages import messages
 
-class IPathAvailable:
-    """ API Path取得処理を実装したインタフェース """
-    def _get_path(self) -> str:
-        raise NotImplementedError
+# 共通処理で扱うデータ
+class DataCommonViewFunction:
 
-class DataViewMixin(IPathAvailable):
-    """ View用テストデータクラスで利用するミックスイン """
-
-    # 前処理 テスト対象をDB上へ事前に登録
-    def _setup_db(self, *models_list: List[models.Model]):
-        for models in models_list:
-            [model.save() for model in models]
-
-    def get_unauthorized(self) -> Tuple[APIClient, str, TypeAPIResponse]:
+    def get_unauthorized(self) -> Tuple[APIClient, TypeAPIResponse]:
 
         client = APIClient()
         expected: TypeAPIResponse = {
@@ -31,35 +20,37 @@ class DataViewMixin(IPathAvailable):
 
         return (
             client,
-            self._get_path(),
             expected
         )
 
-class TestView:
-    """ View用の共通テスト処理を記述したクラス """
+data_common_view_function = DataCommonViewFunction()
 
-    def _get_test_data(self) -> DataViewMixin:
-        raise NotImplementedError
+TypeCommonFunctionParam = TypedDict("TypeCommonFunctionParam",{
+    'login_path': str
+})
 
-    def run_tests(self):
-        """ 共通テスト実行処理 サブクラスでテストメソッドを経由して呼ばれる 
+
+class TestCommonViewFunction:
+
+    def run_tests(self, params: TypeCommonFunctionParam):
+        """ 共通テスト実行処理 各Viewのテストクラスより呼ばれる
 
         Example
         -------
-        test_共通処理(self):
-            super().run_tests()
+        test__common(self):
+            test_common_view_function.run_tests(...)
         """
 
-        self.未ログインユーザによるGETリクエストで401レスポンスが得られること()
+        self.unauthorized_for_anonymous_user(params['login_path'])
 
-    def 未ログインユーザによるGETリクエストで401レスポンスが得られること(self):
+    def unauthorized_for_anonymous_user(self, login_path: str):
 
         # GIVEN
-        client, path, expected = self._get_test_data().get_unauthorized()
-
+        client, expected = data_common_view_function.get_unauthorized()
         # WHEN
-        actual = client.get(path)
-
+        actual = client.get(login_path)
         # THEN
         assert actual.status_code == HTTP_401_UNAUTHORIZED
         assert actual.data == expected
+
+test_common_view_function = TestCommonViewFunction()

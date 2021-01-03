@@ -1,17 +1,15 @@
-from django.db import models
 from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
-from typing import cast
 
 from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
-from common.api_response import APIResponseMixin
+from common.api_response import api_response_handler
 from common.request.pagination_handler import PaginationHandlerMixin
-from common.login_user_handler import LoginUserHandlerMixin
+from common.login_user_handler import LoginRequiredMixin, login_user_handler
 
-class CategoryView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
+class CategoryView(LoginRequiredMixin, views.APIView):
     """ カテゴリAPI用View """
 
     def get(self, request: Request) -> Response:
@@ -28,10 +26,12 @@ class CategoryView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
             カテゴリ一覧を格納したレスポンス
         """
 
-        category_list = Category.objects.filter(user_id = self.get_login_user_id(request)).order_by('-id')
+        category_list = Category.objects.filter(
+            user_id = login_user_handler.get_login_user_id(request)
+        ).order_by('-id')
 
         return Response(
-            self.render_to_success_response(
+            api_response_handler.render_to_success_response(
                 'ok',
                 {
                     'category_list': CategorySerializer(instance=category_list, many=True).data
@@ -39,8 +39,9 @@ class CategoryView(APIResponseMixin, LoginUserHandlerMixin, views.APIView):
             ),
             status=status.HTTP_200_OK
         )
-    
-class IllustView(APIResponseMixin, PaginationHandlerMixin, LoginUserHandlerMixin, views.APIView):
+
+
+class IllustView(PaginationHandlerMixin, LoginRequiredMixin, views.APIView):
     """ イラストAPI用View """
 
     def get(self, request: Request) -> Response:
@@ -59,14 +60,14 @@ class IllustView(APIResponseMixin, PaginationHandlerMixin, LoginUserHandlerMixin
 
         query = {
             'id__gt': 2,
-            'user_id': self.get_login_user_id(request),
+            'user_id': login_user_handler.get_login_user_id(request),
         }
 
         pagination = self.get_current_pagination(Illust, query, 5, ('-id',))
         illust_list = pagination['result_list']
 
         return Response(
-            self.render_to_success_response(
+            api_response_handler.render_to_success_response(
                 'ok',
                 {
                     'illust_list': IllustSerializer(instance=illust_list, many=True).data,
