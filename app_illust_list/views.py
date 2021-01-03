@@ -28,7 +28,7 @@ class CategoryView(LoginRequiredMixin, views.APIView):
         """
 
         category_list = Category.objects.filter(
-            user_id = login_user_handler.get_login_user_id(request)
+            user_id = login_user_handler.get_login_user(request)
         ).order_by('-id')
 
         return Response(
@@ -82,7 +82,7 @@ class IllustView(PaginationHandlerMixin, LoginRequiredMixin, views.APIView):
 
         query = {
             'id__gt': 2,
-            'user_id': login_user_handler.get_login_user_id(request),
+            'user_id': login_user_handler.get_login_user(request),
         }
 
         pagination = self.get_current_pagination(Illust, query, 5, ('-id',))
