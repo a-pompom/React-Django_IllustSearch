@@ -60,7 +60,7 @@ class DataCategoryView:
 
         expected: TypeAPIResponse = {
             'body': {
-                'category': {'category_name': '実写', 'user_id': '1'}
+                'category': {'category_name': '実写', 'user_id': 1}
             }
         }
 

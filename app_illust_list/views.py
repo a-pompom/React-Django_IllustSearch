@@ -1,11 +1,12 @@
 from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
+from typing import cast
 
-from app_login.models import User
 from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
+from common.custom_type import TypeSerializerErrorDict
 from common.api_response import api_response_handler
 from common.request.pagination_handler import PaginationHandlerMixin
 from common.login_user_handler import LoginRequiredMixin, login_user_handler
@@ -42,13 +43,33 @@ class CategoryView(LoginRequiredMixin, views.APIView):
         )
 
     def post(self, request: Request) -> Response:
+        """ カテゴリ新規登録
+
+        Parameters
+        ----------
+        request : Request
+            ボディへカテゴリ名を格納したリクエスト
+
+        Returns
+        -------
+        Response
+            登録結果 登録後のカテゴリオブジェクトも含む
+        """
         
         category_serializer = CategorySerializer(data=request.data)
-        category_serializer.is_valid()
-        user = User.objects.get(id=category_serializer.validated_data['user_id'])
+
+        # バリデーション
+        if not category_serializer.is_valid():
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。', 
+                cast(TypeSerializerErrorDict, category_serializer.errors)
+            )
+
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
         category = Category(
             category_name=category_serializer.validated_data['category_name'],
-            user_id=user,
+            user_id=login_user_handler.get_login_user(request),
         )
         category.save()
 
@@ -56,7 +77,7 @@ class CategoryView(LoginRequiredMixin, views.APIView):
             api_response_handler.render_to_success_response(
                 'ok',
                 {
-                    'category': category_serializer.data
+                    'category': CategorySerializer(instance=category).data
                 }
             ),
             status=status.HTTP_200_OK

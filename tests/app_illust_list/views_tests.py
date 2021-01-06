@@ -1,5 +1,5 @@
 import pytest
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_422_UNPROCESSABLE_ENTITY
 
 from .views_data import data_category_view
 from tests.view_utils import test_common_view_function
@@ -46,17 +46,46 @@ class TestCategoryView:
             client, path, username, _, expected = view_request_params
             # WHEN
             client.login(username=username)
-            actual = client.post(path, {'category_name': '実写', 'user_id': 1})
-            print(expected)
+            actual = client.post(path, {'category_name': '実写'})
             # THEN
             assert actual.status_code == HTTP_200_OK
             assert actual.data == expected
 
-        def test__empty(self):
-            pass
+        @pytest.mark.parametrize(
+            'view_request_params',
+            [
+                pytest.param(data_category_view.get_single_category(), id='simple')
+            ],
+            indirect=['view_request_params']
+        )
+        def test__empty(self, view_request_params: ParamViewRequestType):
+            # GIVEN
+            client, path, username, _, expected = view_request_params
+            # WHEN
+            client.login(username=username)
+            actual = client.post(path, {'category_name': ''})
+            # THEN
+            assert actual.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+            assert actual.data['errors'][0]['message'] == 'カテゴリ名を入力してください。'
 
-        def test__duplicate(self):
-            pass
+        @pytest.mark.parametrize(
+            'view_request_params',
+            [
+                pytest.param(data_category_view.get_single_category(), id='simple')
+            ],
+            indirect=['view_request_params']
+        )
+        def test__duplicate(self, view_request_params: ParamViewRequestType):
+            # GIVEN
+            client, path, username, _, expected = view_request_params
+            # WHEN
+            client.login(username=username)
+            # 二重登録となるよう、二回Post
+            client.post(path, {'category_name': '実写'})
+            actual = client.post(path, {'category_name': '実写'})
+            # THEN
+            assert actual.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+            assert actual.data['errors'][0]['message'] == 'カテゴリ名は既に使用されています。'
 
 
 # @pytest.mark.django_db(transaction=False)
