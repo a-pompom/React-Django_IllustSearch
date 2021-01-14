@@ -10,7 +10,7 @@ from common.exception_handler import UnAuthorizedException
 class LoginUserHandler:
     """ ログインユーザに関連する処理を扱うためのハンドラ"""
 
-    def get_login_user_id(self, request: Request) -> Union[None, int]:
+    def get_login_user(self, request: Request) -> Union[None, User]:
         """ ログインユーザの識別子を取得
 
         Parameters
@@ -29,9 +29,8 @@ class LoginUserHandler:
         if isinstance(request.user, AnonymousUser) and not request.user.is_authenticated:
             return None
 
-        user = cast(User, request.user)
-        return user.get_id()
-
+        return cast(User, request.user)
+        
 
 class LoginRequiredMixin:
     """ ログイン確認のための前処理を実行するためのミックスイン """
@@ -52,7 +51,7 @@ class LoginRequiredMixin:
 
         # 未ログイン
         # APIViewからEXCEPTION_HANDLERが呼ばれる
-        if login_user_handler.get_login_user_id(request) is None:
+        if login_user_handler.get_login_user(request) is None:
             raise UnAuthorizedException()
 
         # APIViewのinitialメソッドでリクエストを処理

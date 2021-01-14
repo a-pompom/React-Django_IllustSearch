@@ -10,12 +10,12 @@ from common.login_user_handler import LoginRequiredMixin
 
 from app_login.models import User
 
-class DataGetLoginUserId:
+class DataGetLoginUser:
 
-    # DRFのRequest, 期待結果(ユーザID)
-    ParamType = Tuple[Request, Union[int, None]]
+    # DRFのRequest, 期待結果(ユーザ)
+    ParamType = Tuple[Request, Union[User, None]]
 
-    def _get_param(self, request: Request, expected: Union[int, None]) -> ParamType:
+    def _get_param(self, request: Request, expected: Union[User, None]) -> ParamType:
         return (
             request,
             expected
@@ -23,9 +23,10 @@ class DataGetLoginUserId:
 
     def get_specified_user_request(self) -> ParamType:
 
-        expected = 1
+        expected_user_id = 1
+        expected = User(pk=expected_user_id)
         request = Request(HttpRequest())
-        request.user = User(pk=expected)
+        request.user = expected
 
         return self._get_param(request, expected)
 
@@ -84,5 +85,5 @@ class DataInitial:
         return self._get_param(view, self._get_request(user))
 
 
-data_get_login_user_id = DataGetLoginUserId()
+data_get_login_user = DataGetLoginUser()
 data_get_initial = DataInitial()
