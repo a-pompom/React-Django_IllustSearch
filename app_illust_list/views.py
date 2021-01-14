@@ -1,3 +1,6 @@
+from django.db.models import Max
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from rest_framework.exceptions import ErrorDetail
 from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -30,7 +33,7 @@ class CategoryView(LoginRequiredMixin, views.APIView):
 
         category_list = Category.objects.filter(
             user_id = login_user_handler.get_login_user(request)
-        ).order_by('-id')
+        ).order_by('sort_order')
 
         return Response(
             api_response_handler.render_to_success_response(
@@ -67,9 +70,11 @@ class CategoryView(LoginRequiredMixin, views.APIView):
 
             return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+        sort_order = Category.objects.filter(user_id=login_user_handler.get_login_user(request)).aggregate(Max('sort_order'))['sort_order__max']
         category = Category(
             category_name=category_serializer.validated_data['category_name'],
             user_id=login_user_handler.get_login_user(request),
+            sort_order=sort_order if sort_order is not None else 1
         )
         category.save()
 
@@ -82,6 +87,80 @@ class CategoryView(LoginRequiredMixin, views.APIView):
             ),
             status=status.HTTP_200_OK
         )
+
+    def put(self, request: Request) -> Response:
+        category_serializer = CategorySerializer(data=request.data, partial=True)
+
+        # バリデーション
+        if not category_serializer.is_valid():
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。', 
+                cast(TypeSerializerErrorDict, category_serializer.errors)
+            )
+
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        
+        try:
+            category = Category.objects.get(category_id=category_serializer.validated_data.get('category_id', ''))
+            category.category_name = category_serializer.validated_data['category_name']
+
+            category.save()
+
+            return Response(
+                api_response_handler.render_to_success_response(
+                    'ok',
+                    {
+                        'category': CategorySerializer(instance=category).data
+                    }
+                ),
+                status=status.HTTP_200_OK
+            )
+        except ValidationError:
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。', 
+                {'category_id': [ErrorDetail('カテゴリIDはUUID形式で指定してください。')]}
+            )
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        except ObjectDoesNotExist:
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。', 
+                {'category_id': [ErrorDetail('更新対象のカテゴリが見つかりませんでした。')]}
+            )
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def delete(self, request: Request) -> Response:
+
+        category_serializer = CategorySerializer(data=request.data, partial=True)
+
+        if not category_serializer.is_valid():
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。',
+                cast(TypeSerializerErrorDict, category_serializer.errors)
+            )
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        try:
+            category: Category = Category.objects.get(category_id=category_serializer.validated_data.get('category_id', ''))
+            category.delete()
+
+            response = api_response_handler.render_to_success_response()
+            return Response(response, status=status.HTTP_200_OK)
+
+        except ValidationError:
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。', 
+                {'category_id': [ErrorDetail('カテゴリIDはUUID形式で指定してください。')]}
+            )
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        except ObjectDoesNotExist:
+            response = api_response_handler.render_to_error_response(
+                '登録に失敗しました。', 
+                {'category_id': [ErrorDetail('削除対象のカテゴリが見つかりませんでした。')]}
+            )
+            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class IllustView(PaginationHandlerMixin, LoginRequiredMixin, views.APIView):

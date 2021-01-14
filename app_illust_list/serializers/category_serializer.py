@@ -1,6 +1,7 @@
-from typing import Dict
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
+from rest_framework.fields import empty
+from typing import Literal, Dict, Any, Union
 
 from app_illust_list.models.category import Category
 from common.validator import is_unique_model
@@ -15,10 +16,17 @@ class CategorySerializer(serializers.Serializer):
         カテゴリ名
     """
 
+    # カテゴリ識別子
+    category_id = serializers.UUIDField(required=False)
+
     # カテゴリ名
     category_name = serializers.CharField(error_messages={'blank': 'カテゴリ名を入力してください。'})
 
+    # カテゴリ作成ユーザ識別子
     user_id = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    # 画面表示順
+    sort_order = serializers.IntegerField(required=False)
 
     def validate_category_name(self, category_name: str) -> str:
         """ カテゴリ名バリデーション
@@ -39,7 +47,8 @@ class CategorySerializer(serializers.Serializer):
             ユニーク制約に反すると送出される
         """
 
-        if not is_unique_model(Category, {'category_name': category_name}):
+        # 更新時はカテゴリ名が重複していても同一の値で更新されるだけなので、チェック対象外
+        if not self.partial and not is_unique_model(Category, {'category_name': category_name}):
 
             raise ValidationError('カテゴリ名は既に使用されています。')
         
@@ -47,4 +56,3 @@ class CategorySerializer(serializers.Serializer):
 
 class CategoryListSerializer(serializers.ListSerializer):
     child = CategorySerializer()
-
