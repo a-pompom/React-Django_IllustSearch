@@ -1,21 +1,25 @@
 from django.db.models import Max
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from rest_framework.exceptions import ErrorDetail
+from django.db.models.base import Model
 from rest_framework import status, views
 from rest_framework.request import Request
 from rest_framework.response import Response
-from typing import cast
+
+from rest_framework.serializers import Serializer
 
 from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
-from common.custom_type import TypeSerializerErrorDict
 from common.api_response import api_response_handler
 from common.request.pagination_handler import PaginationHandlerMixin
 from common.login_user_handler import LoginRequiredMixin, login_user_handler
+from common.single_model_view_handler import get_single_model_view_handler
+
 
 class CategoryView(LoginRequiredMixin, views.APIView):
     """ カテゴリAPI用View """
+
+    def __init__(self):
+        self._single_model_view_handler = get_single_model_view_handler('category', CategorySerializer, Category)
 
     def get(self, request: Request) -> Response:
         """ カテゴリ一覧表示
@@ -46,121 +50,34 @@ class CategoryView(LoginRequiredMixin, views.APIView):
         )
 
     def post(self, request: Request) -> Response:
-        """ カテゴリ新規登録
-
-        Parameters
-        ----------
-        request : Request
-            ボディへカテゴリ名を格納したリクエスト
-
-        Returns
-        -------
-        Response
-            登録結果 登録後のカテゴリオブジェクトも含む
-        """
+        """ カテゴリ新規登録 """
         
-        category_serializer = CategorySerializer(data=request.data)
-
-        # バリデーション
-        if not category_serializer.is_valid():
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。', 
-                cast(TypeSerializerErrorDict, category_serializer.errors)
+        # バリデーション後のシリアライザから新規登録用Modelオブジェクトを生成
+        def get_model_instance(serializer: Serializer) -> Model:
+            sort_order = Category.objects.filter(user_id=login_user_handler.get_login_user(request)).aggregate(Max('sort_order'))['sort_order__max']
+            category = Category(
+                category_name=serializer.validated_data['category_name'],
+                user_id=login_user_handler.get_login_user(request),
+                sort_order=sort_order if sort_order is not None else 1
             )
 
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        sort_order = Category.objects.filter(user_id=login_user_handler.get_login_user(request)).aggregate(Max('sort_order'))['sort_order__max']
-        category = Category(
-            category_name=category_serializer.validated_data['category_name'],
-            user_id=login_user_handler.get_login_user(request),
-            sort_order=sort_order if sort_order is not None else 1
-        )
-        category.save()
-
-        return Response(
-            api_response_handler.render_to_success_response(
-                'ok',
-                {
-                    'category': CategorySerializer(instance=category).data
-                }
-            ),
-            status=status.HTTP_200_OK
+            return category
+        return self._single_model_view_handler.post(
+            CategorySerializer(data=request.data),
+            get_model_instance
         )
 
     def put(self, request: Request) -> Response:
-        category_serializer = CategorySerializer(data=request.data, partial=True)
-
-        # バリデーション
-        if not category_serializer.is_valid():
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。', 
-                cast(TypeSerializerErrorDict, category_serializer.errors)
-            )
-
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        
-        try:
-            category = Category.objects.get(category_id=category_serializer.validated_data.get('category_id', ''))
-            category.category_name = category_serializer.validated_data['category_name']
-
-            category.save()
-
-            return Response(
-                api_response_handler.render_to_success_response(
-                    'ok',
-                    {
-                        'category': CategorySerializer(instance=category).data
-                    }
-                ),
-                status=status.HTTP_200_OK
-            )
-        except ValidationError:
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。', 
-                {'category_id': [ErrorDetail('カテゴリIDはUUID形式で指定してください。')]}
-            )
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        except ObjectDoesNotExist:
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。', 
-                {'category_id': [ErrorDetail('更新対象のカテゴリが見つかりませんでした。')]}
-            )
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        """ カテゴリ更新 """
+        return self._single_model_view_handler.put(
+            CategorySerializer(data=request.data, partial=True)
+        )
 
     def delete(self, request: Request) -> Response:
-
-        category_serializer = CategorySerializer(data=request.data, partial=True)
-
-        if not category_serializer.is_valid():
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。',
-                cast(TypeSerializerErrorDict, category_serializer.errors)
-            )
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        try:
-            category: Category = Category.objects.get(category_id=category_serializer.validated_data.get('category_id', ''))
-            category.delete()
-
-            response = api_response_handler.render_to_success_response()
-            return Response(response, status=status.HTTP_200_OK)
-
-        except ValidationError:
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。', 
-                {'category_id': [ErrorDetail('カテゴリIDはUUID形式で指定してください。')]}
-            )
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        except ObjectDoesNotExist:
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。', 
-                {'category_id': [ErrorDetail('削除対象のカテゴリが見つかりませんでした。')]}
-            )
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        """ カテゴリ削除 """
+        return self._single_model_view_handler.delete(
+            CategorySerializer(data=request.data, partial=True)
+        )
 
 
 class IllustView(PaginationHandlerMixin, LoginRequiredMixin, views.APIView):
