@@ -1,17 +1,13 @@
 from typing import cast, Union, Tuple, Dict, Any, Callable, Type
 from functools import wraps
 
-from django.db.models.base import Model, ModelBase
+from django.db.models.base import Model
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models.manager import BaseManager
-from django.db.models.query import QuerySet
 from rest_framework.serializers import Serializer
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_422_UNPROCESSABLE_ENTITY
-from rest_framework.exceptions import ErrorDetail
 
 from .api_response import api_response_handler
-from .custom_type import TypeSerializerErrorDict
 from config.messages import messages
 
 def validate(view_func: Callable):
@@ -32,11 +28,7 @@ def validate(view_func: Callable):
     @wraps(view_func)
     def wrapper(self: Any, serializer: Serializer, *args) -> Response:
         if not serializer.is_valid():
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。',
-                cast(TypeSerializerErrorDict, serializer.errors)
-            )
-            return Response(response, status=HTTP_422_UNPROCESSABLE_ENTITY)
+            return api_response_handler.render_validation_error(serializer.errors)
 
         return view_func(self, serializer, *args)
     return wrapper
@@ -114,18 +106,10 @@ class SingleModelViewHandler:
         model_object = get_model_instance(serializer)
         model_object.save()
 
-        return Response(
-            api_response_handler.render_to_success_response(
-                'ok',
-                {
-                    self._view_key: self._serializer_class(instance=model_object).data
-                }
-            ),
-            status=HTTP_200_OK
-        )
+        return api_response_handler.render_success_update(self._view_key, self._serializer_class(instance=model_object))
 
     @validate
-    def put(self, serializer: Serializer):
+    def put(self, serializer: Serializer) -> Response:
         """ Modelの識別子から、既存レコードを更新
 
         Parameters
@@ -142,11 +126,10 @@ class SingleModelViewHandler:
         model_object, error_key = self._get_model_object(**self._get_id_query(serializer))
 
         if model_object is None:
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。',
-                {f'{self._model_identifier_key}': [ErrorDetail(messages[self._view_key]['error']['update'][error_key])]}
+            return api_response_handler.render_error_by_key(
+                self._model_identifier_key,
+                messages[self._view_key]['error']['update'][error_key]
             )
-            return Response(response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
         # validated_data -> Model Attribute
         for key in serializer.validated_data:
@@ -158,15 +141,7 @@ class SingleModelViewHandler:
         
         model_object.save()
 
-        return Response(
-            api_response_handler.render_to_success_response(
-                'ok',
-                {
-                    self._view_key: self._serializer_class(instance=model_object).data
-                }
-            ),
-            status=HTTP_200_OK
-        )
+        return api_response_handler.render_success_update(self._view_key, self._serializer_class(instance=model_object))
 
     @validate
     def delete(self, serializer: Serializer) -> Response:
@@ -186,16 +161,31 @@ class SingleModelViewHandler:
         model_object, error_key = self._get_model_object(**self._get_id_query(serializer))
 
         if model_object is None:
-            response = api_response_handler.render_to_error_response(
-                '登録に失敗しました。',
-                {f'{self._model_identifier_key}': [ErrorDetail(messages[self._view_key]['error']['delete'][error_key])]}
+            return api_response_handler.render_error_by_key(
+                self._model_identifier_key,
+                messages[self._view_key]['error']['update'][error_key]
             )
-            return Response(response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
         model_object.delete()
-        response = api_response_handler.render_to_success_response()
-        return Response(response, status=HTTP_200_OK)
+
+        return api_response_handler.render_success()
 
 
 def get_single_model_view_handler(view_key: str, serializer_class: Type[Serializer], model_class: Type[Model]) -> SingleModelViewHandler:
+    """ 各ViewごとのModel操作共通処理を取得
+
+    Parameters
+    ----------
+    view_key : str
+        エラーメッセージ取得用のView識別子
+    serializer_class : Type[Serializer]
+        レスポンスでViewごとのシリアライザを生成するためのクラス
+    model_class : Type[Model]
+        Model操作用クラス
+
+    Returns
+    -------
+    SingleModelViewHandler
+        共通処理を格納したハンドラ
+    """
     return SingleModelViewHandler(view_key, serializer_class, model_class)

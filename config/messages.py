@@ -1,10 +1,15 @@
+from dataclasses import dataclass
 from .messages_custom_type import TypeMessages
 
 # アプリで利用するメッセージ管理用ディクショナリ
-messages = {
+messages: TypeMessages = {
     'common': {
+        'success': {
+            'response_ok': 'ok'
+        },
         'error': {
-            'unauthorized': 'unauthorized...'
+            'unauthorized': 'unauthorized...',
+            'update_failure': '登録に失敗しました。'
         }
     },
     'category': {
