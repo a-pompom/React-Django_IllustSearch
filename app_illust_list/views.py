@@ -39,14 +39,8 @@ class CategoryView(LoginRequiredMixin, views.APIView):
             user_id = login_user_handler.get_login_user(request)
         ).order_by('sort_order')
 
-        return Response(
-            api_response_handler.render_to_success_response(
-                'ok',
-                {
-                    'category_list': CategorySerializer(instance=category_list, many=True).data
-                }
-            ),
-            status=status.HTTP_200_OK
+        return api_response_handler.success.render_with_body(
+            {'category_list': CategorySerializer(instance=category_list, many=True).data}
         )
 
     def post(self, request: Request) -> Response:
@@ -54,14 +48,14 @@ class CategoryView(LoginRequiredMixin, views.APIView):
         
         # バリデーション後のシリアライザから新規登録用Modelオブジェクトを生成
         def get_model_instance(serializer: Serializer) -> Model:
+
             sort_order = Category.objects.filter(user_id=login_user_handler.get_login_user(request)).aggregate(Max('sort_order'))['sort_order__max']
-            category = Category(
+            return Category(
                 category_name=serializer.validated_data['category_name'],
                 user_id=login_user_handler.get_login_user(request),
                 sort_order=sort_order if sort_order is not None else 1
             )
 
-            return category
         return self._single_model_view_handler.post(
             CategorySerializer(data=request.data),
             get_model_instance
@@ -80,38 +74,38 @@ class CategoryView(LoginRequiredMixin, views.APIView):
         )
 
 
-class IllustView(PaginationHandlerMixin, LoginRequiredMixin, views.APIView):
-    """ イラストAPI用View """
+# class IllustView(PaginationHandlerMixin, LoginRequiredMixin, views.APIView):
+#     """ イラストAPI用View """
 
-    def get(self, request: Request) -> Response:
-        """ イラスト一覧表示
+#     def get(self, request: Request) -> Response:
+#         """ イラスト一覧表示
 
-        Parameters
-        ----------
-        request : Request
-            リクエスト情報 ユーザを識別するために利用
+#         Parameters
+#         ----------
+#         request : Request
+#             リクエスト情報 ユーザを識別するために利用
 
-        Returns
-        -------
-        Response
-            イラスト一覧を格納したレスポンス
-        """
+#         Returns
+#         -------
+#         Response
+#             イラスト一覧を格納したレスポンス
+#         """
 
-        query = {
-            'id__gt': 2,
-            'user_id': login_user_handler.get_login_user(request),
-        }
+#         query = {
+#             'id__gt': 2,
+#             'user_id': login_user_handler.get_login_user(request),
+#         }
 
-        pagination = self.get_current_pagination(Illust, query, 5, ('-id',))
-        illust_list = pagination['result_list']
+#         pagination = self.get_current_pagination(Illust, query, 5, ('-id',))
+#         illust_list = pagination['result_list']
 
-        return Response(
-            api_response_handler.render_to_success_response(
-                'ok',
-                {
-                    'illust_list': IllustSerializer(instance=illust_list, many=True).data,
-                    'has_next': pagination['has_next'],
-                }
-            ),
-            status=status.HTTP_200_OK
-        )
+#         return Response(
+#             api_response_handler.render_to_success_response(
+#                 'ok',
+#                 {
+#                     'illust_list': IllustSerializer(instance=illust_list, many=True).data,
+#                     'has_next': pagination['has_next'],
+#                 }
+#             ),
+#             status=status.HTTP_200_OK
+#         )

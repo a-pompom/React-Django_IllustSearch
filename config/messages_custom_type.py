@@ -5,6 +5,11 @@ def get_type_def():
     return [messages]
 
 # TYPE DEF HERE
-TypeError = TypedDict("TypeError", { "unauthorized": str })
-TypeCommon = TypedDict("TypeCommon", { "error": TypeError })
-TypeMessages = TypedDict("TypeMessages", { "common": TypeCommon })
+TypeDelete = TypedDict("TypeDelete", { "invalid_uuid": str, "not_found": str })
+TypeUpdate = TypedDict("TypeUpdate", { "invalid_uuid": str, "not_found": str })
+TypeError = TypedDict("TypeError", { "update": TypeUpdate, "delete": TypeDelete })
+TypeCategory = TypedDict("TypeCategory", { "error": TypeError })
+TypeError = TypedDict("TypeError", { "unauthorized": str, "update_failure": str })
+TypeSuccess = TypedDict("TypeSuccess", { "response_ok": str })
+TypeCommon = TypedDict("TypeCommon", { "success": TypeSuccess, "error": TypeError })
+TypeMessages = TypedDict("TypeMessages", { "common": TypeCommon, "category": TypeCategory })

@@ -41,7 +41,4 @@ def handle_exception(exception: Exception, context: TypeExceptionContext) -> Uni
 
     # 未ログイン
     if isinstance(exception, UnAuthorizedException):
-        return Response(
-            api_response_handler.render_to_failure_response(messages['common']['error']['unauthorized'])
-            , status=HTTP_401_UNAUTHORIZED
-        )
+        return api_response_handler.render_unauthorized()
