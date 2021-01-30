@@ -13,7 +13,7 @@ from _pytest.fixtures import SubRequest
 from django.db import models
 from rest_framework.test import APIClient
 
-from common.custom_type import TypeAPIResponse
+from common.api_response import SuccessAPIResponse
 
 @dataclasses.dataclass
 class ParamViewRequestType:
@@ -22,7 +22,7 @@ class ParamViewRequestType:
     path: str
     login_username: str
     model_items_list: List[List[models.Model]]
-    expected_response: TypeAPIResponse
+    expected_response: SuccessAPIResponse
     get_query: str = ''
     post_body: Optional[Dict[str, Any]] = None
     put_body: Optional[Dict[str, Any]] = None

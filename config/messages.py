@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from .messages_custom_type import TypeMessages
 
 # アプリで利用するメッセージ管理用ディクショナリ

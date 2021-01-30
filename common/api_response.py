@@ -2,17 +2,36 @@ from rest_framework.exceptions import ErrorDetail
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_422_UNPROCESSABLE_ENTITY
-from typing import List, Dict, Any, cast
-
 from rest_framework.utils.serializer_helpers import ReturnDict
+from typing import List, Dict, Any, cast, TypedDict, Optional
 
-from .custom_type import TypeSerializerErrorDict, TypeErrorDict, TypeAPIResponse
 from config.messages import messages
 
-class APIResponseHandler:
-    """ フロント側で扱いやすいレスポンスへ整形するためのハンドラ """
+Body = Dict[str, Any]
+# フィールドごとに格納されたエラーオブジェクト
+FieldError = Dict[str, List[str]]
+FieldErrorDetail = Dict[str, List[ErrorDetail]]
 
-    def _get_success_response(self, message: str=messages['common']['success']['response_ok'], body: Dict[str, Any]=None) -> TypeAPIResponse:
+class FieldErrorResponse(TypedDict):
+    """ エラーオブジェクト """
+    fieldName: str
+    message: str
+
+class SuccessAPIResponse(TypedDict):
+    """ 成功APIレスポンス """
+
+    body: Body
+
+class FailureAPIResponse(TypedDict, total=False):
+    """ 失敗APIレスポンス """
+
+    body: Body
+    errors: Optional[List[FieldErrorResponse]]
+
+
+class _SuccessHandler:
+    """ 処理成功時に受け取るレスポンスを生成 """
+    def _get_response(self, message: str=messages['common']['success']['response_ok'], body: Dict[str, Any]=None) -> SuccessAPIResponse:
         """ 処理成功レスポンス 成功メッセージを格納
 
         Parameters
@@ -22,8 +41,8 @@ class APIResponseHandler:
 
         Returns
         -------
-        TypePostAPIResponse
-            PostAPI成功メッセージを格納したレスポンス
+        SuccessAPIResponse
+            API成功メッセージを格納したレスポンス
         """
 
         # 単純な登録処理などでは、成功メッセージのみを返却
@@ -33,21 +52,22 @@ class APIResponseHandler:
                     'message': message
                 }
             }
-        
+
+        body['message'] = message
         return {
             'body': body
         }
 
-    def render_success(self) -> Response:
+    def render(self) -> Response:
         """ 成功メッセージのみ """
-        return Response(self._get_success_response(), status=HTTP_200_OK)
+        return Response(self._get_response(), status=HTTP_200_OK)
 
-    def render_success_body(self, body: Dict[str, Any]) -> Response:
+    def render_with_body(self, body: Body) -> Response:
         """ ボディありの成功レスポンスを作成 """
-        return Response(self._get_success_response(body=body), status=HTTP_200_OK)
+        return Response(self._get_response(body=body), status=HTTP_200_OK)
 
-    def render_success_update(self, model_name: str, serializer: Serializer) -> Response:
-        """ 更新対象を含むレスポンスを作成
+    def render_with_updated_model(self, model_name: str, serializer: Serializer) -> Response:
+        """ 更新対象モデルを含むレスポンスを作成
 
         Parameters
         ----------
@@ -63,32 +83,33 @@ class APIResponseHandler:
         """
         
         return Response(
-            self._get_success_response(
-                messages['common']['success']['response_ok'],
-                {model_name: serializer.data}
+            self._get_response(
+                body={model_name: serializer.data}
             ),
             status=HTTP_200_OK
         )
 
 
-    def _get_error_response(self, message: str, errors: TypeSerializerErrorDict) -> TypeAPIResponse:
+class _FailureHandler:
+    """ 失敗時に受け取るレスポンスを生成 """
+    def _get_response(self, message: str, errors: FieldErrorDetail) -> FailureAPIResponse:
         """ エラーレスポンスを作成 各フィールドへのエラー内容を格納
 
         Parameters
         ----------
         message : str
             作成・更新処理失敗メッセージ
-        errors : TypeSerializerErrorDict
+        errors : FieldErrorDetail
             フィールド単位でエラーを格納したシリアライザ用エラー辞書
 
         Returns
         -------
-        TypeAPIResponse
+        FailureAPIResponse
             API失敗メッセージと、フィールド単位のエラーメッセージを格納したレスポンス
         """
 
         # フロントで画面表示しやすい形へ整形
-        api_response_errors: List[TypeErrorDict] = [
+        api_response_errors: List[FieldErrorResponse] = [
             {
                 'fieldName': field_name,
                 'message': self._get_error_message(error_details)
@@ -120,7 +141,6 @@ class APIResponseHandler:
 
         return error_message
 
-
     def render_validation_error(self, serializor_error: ReturnDict) -> Response:
         """ バリデーションエラー用レスポンスを作成
 
@@ -135,21 +155,20 @@ class APIResponseHandler:
             バリデーションエラー内容を含むレスポンス
         """
 
-        response = self._get_error_response(
-            '登録に失敗しました。',
-            cast(TypeSerializerErrorDict, serializor_error)
+        response = self._get_response(
+            messages['common']['error']['update_failure'],
+            cast(FieldErrorDetail, serializor_error)
         )
         return Response(response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def render_error_by_key(self, error_key: str, error_message: str) -> Response:
-        """ キー: 原因で対応するエラーレスポンスを返却
+    def render_field_error(self, field_error: FieldError) -> Response:
+        """ 画面上のフィールドに対応するエラーレスポンスを作成
 
         Parameters
         ----------
-        error_key : str
-            エラー発生箇所
-        error_message : str
-            エラー原因メッセージ
+        field_error: FieldError
+            フィールド名: エラーメッセージリスト形式でエラー情報を格納した辞書\n
+            ex) {"username": ["8文字以上で入力", "半角英数のみ"], "confirm_passsword": ["パスワード不一致"]}
 
         Returns
         -------
@@ -157,9 +176,13 @@ class APIResponseHandler:
             画面上でユーザへエラーを通知するためのレスポンス
         """
 
-        response = self._get_error_response(
-            '登録に失敗しました。',
-            {error_key: [ErrorDetail(error_message)]}
+        error_detail: FieldErrorDetail = {}
+        for field in field_error.keys():
+            error_detail[field] = [ErrorDetail(error_message) for error_message in field_error[field]]
+
+        response = self._get_response(
+            messages['common']['error']['update_failure'],
+            error_detail
         )
         return Response(response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
@@ -173,11 +196,20 @@ class APIResponseHandler:
             未ログインレスポンス
         """
 
-        response = {
+        response: FailureAPIResponse = {
                 'body': {
                     'message': messages['common']['error']['unauthorized']
                 }
             }
         return Response(data=response, status=HTTP_401_UNAUTHORIZED)
 
-api_response_handler = APIResponseHandler()
+
+class _APIResponseHandler:
+    """ フロント側で扱いやすいレスポンスへ整形するためのハンドラ """
+
+    def __init__(self):
+        self.success = _SuccessHandler()
+        self.failure = _FailureHandler()
+
+
+api_response_handler = _APIResponseHandler()

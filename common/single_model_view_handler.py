@@ -28,7 +28,7 @@ def validate(view_func: Callable):
     @wraps(view_func)
     def wrapper(self: Any, serializer: Serializer, *args) -> Response:
         if not serializer.is_valid():
-            return api_response_handler.render_validation_error(serializer.errors)
+            return api_response_handler.failure.render_validation_error(serializer.errors)
 
         return view_func(self, serializer, *args)
     return wrapper
@@ -106,7 +106,7 @@ class SingleModelViewHandler:
         model_object = get_model_instance(serializer)
         model_object.save()
 
-        return api_response_handler.render_success_update(self._view_key, self._serializer_class(instance=model_object))
+        return api_response_handler.success.render_with_updated_model(self._view_key, self._serializer_class(instance=model_object))
 
     @validate
     def put(self, serializer: Serializer) -> Response:
@@ -126,9 +126,8 @@ class SingleModelViewHandler:
         model_object, error_key = self._get_model_object(**self._get_id_query(serializer))
 
         if model_object is None:
-            return api_response_handler.render_error_by_key(
-                self._model_identifier_key,
-                messages[self._view_key]['error']['update'][error_key]
+            return api_response_handler.failure.render_field_error(
+                {self._model_identifier_key: [messages[self._view_key]['error']['update'][error_key]]}
             )
 
         # validated_data -> Model Attribute
@@ -141,7 +140,7 @@ class SingleModelViewHandler:
         
         model_object.save()
 
-        return api_response_handler.render_success_update(self._view_key, self._serializer_class(instance=model_object))
+        return api_response_handler.success.render_with_updated_model(self._view_key, self._serializer_class(instance=model_object))
 
     @validate
     def delete(self, serializer: Serializer) -> Response:
@@ -161,14 +160,13 @@ class SingleModelViewHandler:
         model_object, error_key = self._get_model_object(**self._get_id_query(serializer))
 
         if model_object is None:
-            return api_response_handler.render_error_by_key(
-                self._model_identifier_key,
-                messages[self._view_key]['error']['update'][error_key]
+            return api_response_handler.failure.render_field_error(
+                {self._model_identifier_key: [messages[self._view_key]['error']['delete'][error_key]]}
             )
 
         model_object.delete()
 
-        return api_response_handler.render_success()
+        return api_response_handler.success.render()
 
 
 def get_single_model_view_handler(view_key: str, serializer_class: Type[Serializer], model_class: Type[Model]) -> SingleModelViewHandler:

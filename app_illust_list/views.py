@@ -39,7 +39,7 @@ class CategoryView(LoginRequiredMixin, views.APIView):
             user_id = login_user_handler.get_login_user(request)
         ).order_by('sort_order')
 
-        return api_response_handler.render_success_body(
+        return api_response_handler.success.render_with_body(
             {'category_list': CategorySerializer(instance=category_list, many=True).data}
         )
 

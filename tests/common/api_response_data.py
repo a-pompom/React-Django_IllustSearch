@@ -1,142 +1,185 @@
-from typing import Tuple
+from typing import Tuple, Optional, Any
+from rest_framework.response import Response
+from rest_framework.serializers import Serializer
+from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_422_UNPROCESSABLE_ENTITY
 
-from common.custom_type import *
+from app_login.models import User
+from app_login.serializer import SignupSerializer
+from config.messages import messages
 
-class DataRenderToSuccessResponse:
+from common.api_response import SuccessAPIResponse, FailureAPIResponse, FieldError
 
-    # メッセージ, ボディ, 期待結果
-    ParamType = Tuple[str, Any, TypeAPIResponse]
-    message = 'ok'
+# メッセージ, ボディ, 期待結果
+SuccessParamType = Tuple[str, Any, Response]
+# モデル名, モデルインスタンスを格納したシリアライザ
+SuccessUpdateParamType = Tuple[str, Serializer, Response]
 
-    def _get_params(self, body=None) -> ParamType:
-        if body is None:
-            return (
-                self.message,
-                None,
-                {
-                    'body': {
-                        'message': self.message
-                    }
-                },
-            )
+FieldErrorParamType = Tuple[Response, FieldError]
+ErrorParamType = Response
 
-        body['message'] = self.message
 
+OK_MESSAGE = messages['common']['success']['response_ok']
+
+class DataSuccess:
+
+    def _get_params(self, expected: Response, message=OK_MESSAGE, body=None) -> SuccessParamType:
         return (
-            self.message,
+            message,
             body,
-            {
-                'body': body
-            },
+            expected,
         )
 
-    def get_only_message(self) -> ParamType:
-        return self._get_params()
-
-    def get_response_with_body(self) -> ParamType:
-        return self._get_params({
-            'users': ['pompom', 'a-pompom', 'ユーザ']
-        })
-
-
-ParamErrorResponseType = Tuple[str, TypeSerializerErrorDict, TypeAPIResponse]
-
-class DataRenderToErrorResponse:
-
-    # メッセージ, 整形用エラーオブジェクト, 期待結果
-    message = '入力内容に誤りがあります。'
-
-    def get_params(self, errors: TypeSerializerErrorDict, expected_errors: List[TypeErrorDict]) -> ParamErrorResponseType:
-        return (
-            self.message,
-            errors,
-            {
-                'body': {
-                    'message': self.message
-                },
-                'errors': expected_errors
+    def get_render(self) -> SuccessParamType:
+        expected_response: SuccessAPIResponse = {
+            'body': {
+                'message': OK_MESSAGE
             }
+        }
+        expected = Response(data=expected_response, status=HTTP_200_OK)
+        return self._get_params(expected)
+
+    def get_render_with_body(self) -> SuccessParamType:
+        body = {
+            'message': OK_MESSAGE,
+            'user': {
+                'name': 'pompom',
+                'age': 20,
+            }
+        }
+
+        expected_response: SuccessAPIResponse = {
+            'body': body
+        }
+        expected = Response(data=expected_response, status=HTTP_200_OK)
+        return self._get_params(expected, body=body)
+
+
+class DataSuccessUpdateModel:
+
+    def _get_params(self, expected: Response, model_name: str, serializer: Serializer) -> SuccessUpdateParamType:
+        return (
+            model_name,
+            serializer,
+            expected,
         )
 
-    def get_single_field_error(self) -> ParamErrorResponseType:
+    def get_render_with_updated_model(self) -> SuccessUpdateParamType:
+
+        model_name = 'user'
+        model_object = User(username='pompom')
+        serializer = SignupSerializer(instance=model_object)
+
+        expected_response: SuccessAPIResponse = {
+            'body': {
+                'message': OK_MESSAGE,
+                'user': {
+                    'username': 'pompom'
+                }
+            }
+        }
+        expected = Response(data=expected_response, status=HTTP_200_OK)
+
+        return self._get_params(expected, model_name, serializer)
+
+class DataFailure:
+
+    def _get_params(self, expected: Response) -> ErrorParamType:
+        return expected
+
+    def get_unauthorized_error(self):
+
+        expected_response: FailureAPIResponse = {
+            'body': {
+                'message': messages['common']['error']['unauthorized']
+            }
+        }
+        expected = Response(data=expected_response, status=HTTP_401_UNAUTHORIZED)
+
+        return self._get_params(expected)
+
+
+class DataFieldError:
+
+    def _get_params(self, expected: Response, field_error: FieldError) -> FieldErrorParamType:
+
+        return (
+            expected,
+            field_error
+        )
+
+    def get_single_field_error(self):
 
         field_name = 'username'
-        error_message = 'ユーザ名を入力してください。'
-        errors: TypeSerializerErrorDict = {
-            field_name: [ErrorDetail(error_message)]
+        error_messages = ['ユーザ名を入力してください。']
+        errors: FieldError = {field_name: error_messages}
+
+        expected_response: FailureAPIResponse = {
+            'body': {
+                'message': messages['common']['error']['update_failure']
+            },
+            'errors': [{
+                'fieldName': field_name,
+                'message': error_messages[0]
+            }]
         }
 
-        expected_errors: List[TypeErrorDict] = [
-            {
-                'fieldName': field_name,
-                'message': error_message
-            }
-        ]
+        expected = Response(data=expected_response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
-        return self.get_params(errors, expected_errors)
+        return self._get_params(expected, field_error=errors)
 
-    def get_comma_separated_field_error(self) -> ParamErrorResponseType:
-
+    def get_comma_separated_field_error(self) -> FieldErrorParamType:
         field_name = 'age'
         error_messages = ['数値を入力してください。', '年齢は0以上の整数を入力してください。']
-        errors: TypeSerializerErrorDict = {
-            field_name: [ErrorDetail(error_messages[0]), ErrorDetail(error_messages[1])]
+        errors: FieldError = {
+            field_name: error_messages
         }
 
-        expected_errors: List[TypeErrorDict] = [
-            {
+        expected_response: FailureAPIResponse = {
+            'body': {
+                'message': messages['common']['error']['update_failure']
+            },
+            'errors': [{
                 'fieldName': field_name,
                 'message': ', '.join(error_messages)
-            }
-        ]
+            }]
+        }
+        expected = Response(data=expected_response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
-        return self.get_params(errors, expected_errors)
+        return self._get_params(expected, field_error=errors)
 
-    def get_multiple_field_error(self) -> ParamErrorResponseType:
+    def get_multiple_field_error(self) -> FieldErrorParamType:
 
         field_name_list = ['password', 'confirmPassword']
         error_messages = [
             ['半角英数で入力してください。', '10文字以上で入力してください。'],
             ['パスワードが一致しません。']
         ]
-        errors: TypeSerializerErrorDict = {
-            field_name_list[0]: [ErrorDetail(error_messages[0][0]), ErrorDetail(error_messages[0][1])],
-            field_name_list[1]: [ErrorDetail(error_messages[1][0])]
+        field_error: FieldError = {
+            field_name_list[0]: error_messages[0],
+            field_name_list[1]: error_messages[1],
         }
 
-        expected_errors: List[TypeErrorDict] = [
-            {
-                'fieldName': field_name_list[0],
-                'message': ', '.join(error_messages[0])
+        expected_response: FailureAPIResponse = {
+            'body': {
+                'message': messages['common']['error']['update_failure']
             },
-            {
-                'fieldName': field_name_list[1],
-                'message': ', '.join(error_messages[1])
-            },
-        ]
+            'errors': [
+                {
+                    'fieldName': field_name_list[0],
+                    'message': ', '.join(error_messages[0])
+                },
+                {
+                    'fieldName': field_name_list[1],
+                    'message': ', '.join(error_messages[1])
+                },
+            ]
+        }
+        expected = Response(data=expected_response, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
-        return self.get_params(errors, expected_errors)
+        return self._get_params(expected, field_error=field_error)
 
 
-class DataRenderToFailureResponse:
-
-    # メッセージ, 期待結果
-    ParamType = Tuple[str, TypeAPIResponse]
-    message = 'ログインしてください。'
-
-    def _get_param(self) -> ParamType:
-        return (
-            self.message,
-            {
-                'body': {
-                    'message': self.message
-                }
-            }
-        )
-
-    def get_failure(self):
-        return self._get_param()
-
-data_render_success_response = DataRenderToSuccessResponse()
-data_render_to_error_response = DataRenderToErrorResponse()
-data_render_to_failure_response = DataRenderToFailureResponse()
+data_success = DataSuccess()
+data_success_update = DataSuccessUpdateModel()
+data_failure = DataFailure()
+data_field_error = DataFieldError()
