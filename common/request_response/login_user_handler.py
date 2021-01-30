@@ -5,7 +5,7 @@ from rest_framework import views
 from rest_framework.request import Request
 
 from app_login.models import User
-from common.exception_handler import UnAuthorizedException
+from common.exception.app_exception import UnAuthorizedException
 
 class LoginUserHandler:
     """ ログインユーザに関連する処理を扱うためのハンドラ"""

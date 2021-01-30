@@ -9,10 +9,9 @@ from rest_framework.serializers import Serializer
 from .models import Category, Illust
 from .serializers import CategorySerializer, IllustSerializer
 
-from common.api_response import api_response_handler
-from common.request.pagination_handler import PaginationHandlerMixin
-from common.login_user_handler import LoginRequiredMixin, login_user_handler
-from common.single_model_view_handler import get_single_model_view_handler
+from common.request_response.api_response import api_response_handler
+from common.request_response.login_user_handler import LoginRequiredMixin, login_user_handler
+from common.request_response.single_model_view_handler import get_single_model_view_handler
 
 
 class CategoryView(LoginRequiredMixin, views.APIView):

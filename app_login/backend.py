@@ -2,7 +2,7 @@ from django.contrib.auth.backends import BaseBackend
 from rest_framework.request import Request
 from typing import Any, Optional, Union
 
-from .exception import LoginFailureException
+from common.exception.app_exception import LoginFailureException
 from .models import User
 
 class AuthBackend(BaseBackend):

@@ -1,10 +1,8 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
-from rest_framework.fields import empty
-from typing import Literal, Dict, Any, Union
 
 from app_illust_list.models.category import Category
-from common.validator import is_unique_model
+from common.model.validator import is_unique_model
 
 class CategorySerializer(serializers.Serializer):
     """

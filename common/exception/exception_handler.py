@@ -2,17 +2,9 @@ from typing import Tuple, TypedDict, Dict, Any, Union
 from rest_framework import views
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_401_UNAUTHORIZED
 
-from .api_response import api_response_handler
-from config.messages import messages
-
-class APIException(Exception):
-    """ API例外 """
-
-
-class UnAuthorizedException(APIException):
-    """ 未ログイン """
+from common.request_response.api_response import api_response_handler
+from .app_exception import UnAuthorizedException
 
 
 class TypeExceptionContext(TypedDict):
@@ -41,4 +33,4 @@ def handle_exception(exception: Exception, context: TypeExceptionContext) -> Uni
 
     # 未ログイン
     if isinstance(exception, UnAuthorizedException):
-        return api_response_handler.render_unauthorized()
+        return api_response_handler.failure.render_unauthorized()
