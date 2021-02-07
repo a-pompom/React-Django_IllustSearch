@@ -1,7 +1,7 @@
 import pytest
 
-from common.api_response import api_response_handler as sut
-from .api_response_data import *
+from common.request_response.api_response import api_response_handler as sut
+from .api_response_data import data_success, data_success_update, data_failure, data_field_error, FieldErrorParamType
 
 class TestAPIResponse:
 

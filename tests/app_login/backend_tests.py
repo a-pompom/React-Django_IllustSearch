@@ -1,72 +1,88 @@
-from .fixture import *
+from typing import Callable, Any
+import pytest
+from _pytest.fixtures import SubRequest
 
 from app_login.backend import AuthBackend
-from app_login.exception import LoginFailureException
+from common.exception.app_exception import LoginFailureException
 from app_login.models import User
+
+from .backend_data import ParamGetUser, ParamAuthenticate, data_get_user, data_authenticate, MOCK_USER_UUID
+
+PARAM_GET_USER = 'param_get_user'
+PARAM_AUTHENTICATE = 'param_authenticate'
+sut = AuthBackend()
+
+# 前処理 事前に認証処理で扱うユーザをDBへ登録
+create_user: Callable[[str], Any] = lambda username: User.objects.create(user_id=MOCK_USER_UUID, username=username)
+
+@pytest.fixture
+def param_get_user(request: SubRequest) -> ParamGetUser:
+    param: ParamGetUser = request.param
+    create_user(param)
+
+    return param
+
+@pytest.fixture
+def param_authenticate(request: SubRequest) -> ParamAuthenticate:
+    param: ParamAuthenticate = request.param
+    r, username, get_user = param
+    create_user(username)
+
+    return param
+
 
 @pytest.mark.django_db(transaction=False)
 class TestAuthBackend:
-    """ 認証バックエンドテストコード """
 
     # PKによるユーザ取得
-    class TestGetUser:
-        """ get_userメソッドの検証 """
+    class Test__get_user:
         
-        def test_存在するユーザIDでUserが得られること(self, multiple_users):
+        @pytest.mark.parametrize(
+            PARAM_GET_USER, [
+                pytest.param(data_get_user.get_alpha_numeric_username(), id='alpha_numeric'),
+                pytest.param(data_get_user.get_unicode_username(), id='unicode'),
+            ],
+            indirect=[PARAM_GET_USER]
+        )
+        def test__exists_user(self, param_get_user: str):
+            # WHEN
+            actual = sut.get_user(MOCK_USER_UUID)
+            expected = User.objects.get(user_id=MOCK_USER_UUID)
+            print(actual)
+            print(expected)
+            # THEN
+            assert actual == expected
 
+        def test__no_exists_user(self):
             # GIVEN
-            sut = AuthBackend()
-            length = len(multiple_users)
-
-            for i in range(length):
-
-                # WHEN
-                actual = sut.get_user(i+1)
-                expected = User.objects.get(id=i+1)
-
-                # THEN
-                assert actual == expected
-
-        def test_存在しないユーザIDでNoneが返ること(self, multiple_users):
-
-            # GIVEN
-            sut = AuthBackend()
-            invalid_user_id_list = ['invalid userid', -999, 0]
-
-            for invalid_user_id in invalid_user_id_list:
-
-                # WHEN
-                actual = sut.get_user(invalid_user_id)
-
-                # THEN
-                assert actual is None
+            invalid_user_id = 'a47f5ff0-32cc-4059-b5c9-a54b9f1ae2ee'
+            # WHEN
+            actual = sut.get_user(invalid_user_id)
+            # THEN
+            assert actual is None
         
     # 認証処理
-    class TestAuthenticate:
-        """ authenticateメソッドの検証 """
-        def test_妥当なユーザ名でUserが得られること(self, multiple_users):
+    class Test__authenticate:
 
+        @pytest.mark.parametrize(
+            PARAM_AUTHENTICATE,
+            [
+                pytest.param(data_authenticate.get_user(), id='simple')
+            ],
+            indirect=[PARAM_AUTHENTICATE]
+        )
+        def test__success_authenticate(self, param_authenticate: ParamAuthenticate):
             # GIVEN
-            sut = AuthBackend()
-            length = len(multiple_users)
+            request, username, get_expected = param_authenticate
+            # WHEN
+            actual = sut.authenticate(request, username)
+            # THEN
+            assert actual == get_expected()
 
-            user_info = get_user_info_fixture()
-
-            for i in range(length):
-
-                # WHEN
-                actual: User = sut.authenticate(None, username=user_info[i]['username'])
-                expected_user = User.objects.get(username=user_info[i]['username'])
-
-                # THEN
-                assert actual == expected_user
-
-        def test_存在しないユーザ名でLoginFailureExceptionが送出されること(self, multiple_users):
-
+        def test__failure_authenticate(self):
             # GIVEN
-            sut = AuthBackend()
-
+            request, username, get_expected = data_authenticate.get_user()
             # THEN
             with pytest.raises(LoginFailureException):
                 # WHEN
-                sut.authenticate(None, username='Nobody')
+                sut.authenticate(request, username='nobody')

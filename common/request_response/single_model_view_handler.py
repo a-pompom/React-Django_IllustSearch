@@ -78,7 +78,7 @@ class SingleModelViewHandler:
         return (model_object, '')
     
     def _get_id_query(self, serializer: Serializer) -> Dict[str, str]:
-        """ 識別子による絞り込み条件文字列を取得 """
+        """ 識別子による絞り込み条件辞書を取得 """
 
         id = serializer.validated_data.get(f'{self._model_identifier_key}', '')
         return {
@@ -134,7 +134,7 @@ class SingleModelViewHandler:
         for key in serializer.validated_data:
 
             # 識別子は、対象の識別のためにシリアライザに含まれるが、更新する必要はないのでスキップ
-            if 'id' in key:
+            if self._model_identifier_key in key:
                 continue
             model_object.__setattr__(key, serializer.validated_data[key])
         

@@ -1,21 +1,22 @@
-from rest_framework.exceptions import ErrorDetail
-from common.custom_type import TypeSerializerErrorDict
-from django.contrib.auth import login
-from typing import cast
+from typing import Callable
 
-from rest_framework import status, views
+from django.contrib.auth import login
+from django.contrib.auth.hashers import make_password
+from django.db.models.base import Model
+from rest_framework import views
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from .backend import AuthBackend
-from .exception import LoginFailureException
 from .models import User
 from .serializer import LoginSerializer, SignupSerializer
 
-from common import custom_type
-from common.validator import is_unique_model
-from common.api_response import api_response_handler
-from common.login_user_handler import LoginRequiredMixin
+from common.exception.app_exception import LoginFailureException
+from common.model.validator import is_unique_model
+from common.request_response.single_model_view_handler import get_single_model_view_handler
+from common.request_response.api_response import api_response_handler
+from common.request_response.login_user_handler import LoginRequiredMixin
 
 
 class LoginView(views.APIView):
@@ -35,20 +36,18 @@ class LoginView(views.APIView):
             ユーザ情報JSONを格納したレスポンス
         """
 
-        user = User.objects.all()
-
+        is_user_exists = User.objects.count() != 0
         # ユーザが空のときは、デフォルトユーザとしてルートユーザを作成
-        if not len(user):
+        if not is_user_exists:
             root_user = User(
                 username='user',
             )
             root_user.save()
-            user = User.objects.all()
 
-        serializer = LoginSerializer(instance=user, many=True)
+        users = User.objects.all()
+        serializer = LoginSerializer(instance=users, many=True)
 
-        response = api_response_handler.render_to_success_response('ok', {'users': serializer.data})
-        return Response(response, status=status.HTTP_200_OK)
+        return api_response_handler.success.render_with_body({'users': serializer.data})
 
     def post(self, request: Request) -> Response:
         """ ログイン処理 ログインの成否はステータスコードで判定
@@ -84,16 +83,20 @@ class LoginView(views.APIView):
         # ログイン失敗
         except LoginFailureException as ex:
 
-            return Response(api_response_handler.render_to_error_response('ログインに失敗しました。', ex.errors), status=status.HTTP_401_UNAUTHORIZED)
+            return api_response_handler.failure.render_unauthorized()
 
         # 認証処理で得られたユーザでセッションを発行
         login(request, user, 'app_login.backend.AuthBackend')
 
         # ログイン成功
-        return Response(api_response_handler.render_to_success_response('ログイン成功。'), status=status.HTTP_200_OK)
+        return api_response_handler.success.render()
+
 
 class SignUpView(views.APIView):
     """ ユーザ登録API用View """
+
+    def __init__(self):
+        self._single_model_view_handler = get_single_model_view_handler('user', SignupSerializer, User)
 
     def post(self, request: Request) -> Response:
         """ ユーザ登録処理
@@ -108,23 +111,15 @@ class SignUpView(views.APIView):
             ユーザ登録成功 -> 登録成功メッセージ
         """        
 
-        serializer = SignupSerializer(data=request.data)
-
-        # 登録失敗
-        if not serializer.is_valid():
-            response = api_response_handler.render_to_error_response('登録に失敗しました。', cast(custom_type.TypeSerializerErrorDict, serializer.errors))
-
-            return Response(response, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        # ユーザ登録
-        user = User(
-            username=serializer.validated_data['username'],
+        get_model_instance: Callable[[Serializer], Model] = lambda serializer: User.objects.create(
+            username=serializer.validated_data['username'], password=make_password('root')
         )
-        user.save()
 
-        # 登録成功
-        response = api_response_handler.render_to_success_response('登録しました。')
-        return Response(response, status=status.HTTP_200_OK)
+        return self._single_model_view_handler.post(
+            SignupSerializer(data=request.data),
+            get_model_instance
+        )
+
 
 class UserValidateUniqueView(views.APIView):
     """ ユーザがユニークかフロントからのリクエストで検証するためのView """
@@ -147,14 +142,11 @@ class UserValidateUniqueView(views.APIView):
 
         # ユニーク
         if is_unique_model(User, {'username': username}):
-            return Response(api_response_handler.render_to_success_response('OK'), status=status.HTTP_200_OK)
+            return api_response_handler.success.render()
 
         # ユニークでない
-        error_response: TypeSerializerErrorDict = {
-            'username': [ErrorDetail('ユーザ名は既に使用されています。')]
-        }
+        return api_response_handler.failure.render_field_error({'username': ['ユーザ名は既に使用されています。']})
 
-        return Response(api_response_handler.render_to_error_response('error', error_response), status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 class AuthenticationView(LoginRequiredMixin, views.APIView):
     """ ログインが必要な画面で前処理として呼ばれる認証用APIView """
@@ -173,4 +165,4 @@ class AuthenticationView(LoginRequiredMixin, views.APIView):
             ログイン済み-> 200, 未ログイン-> 401
         """
 
-        return Response(api_response_handler.render_to_success_response('OK'), status=status.HTTP_200_OK)
+        return api_response_handler.success.render()

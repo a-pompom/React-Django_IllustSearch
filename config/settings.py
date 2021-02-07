@@ -1,7 +1,7 @@
 import os
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'common.exception_handler.handle_exception',
+    'EXCEPTION_HANDLER': 'common.exception.exception_handler.handle_exception',
 }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

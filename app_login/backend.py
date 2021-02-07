@@ -2,18 +2,18 @@ from django.contrib.auth.backends import BaseBackend
 from rest_framework.request import Request
 from typing import Any, Optional, Union
 
-from .exception import LoginFailureException
+from common.exception.app_exception import LoginFailureException
 from .models import User
 
 class AuthBackend(BaseBackend):
     """ 認証処理用バックエンド
     """
 
-    def get_user(self, user_id: int) -> Union[User, None]:
+    def get_user(self, user_id: str) -> Union[User, None]:
         """ セッションに格納されているユーザ識別用キーをもとにユーザモデルを取得
         Parameters
         ----------
-        user_id: int
+        user_id: str
             一意識別子
         
         Returns
@@ -23,7 +23,7 @@ class AuthBackend(BaseBackend):
         """
 
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(user_id=user_id)
 
         except (User.DoesNotExist, ValueError):
             return None
