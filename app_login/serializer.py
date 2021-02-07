@@ -4,6 +4,8 @@ from rest_framework.exceptions import ValidationError
 from common.model import validator
 from .models import User
 
+USERNAME_MAX_LENGTH = 255
+
 class LoginSerializer(serializers.Serializer):
     """ ログインAPI用シリアライザ
 
@@ -61,22 +63,12 @@ class SignupSerializer(serializers.Serializer):
             文字長・ユニーク性を満たさなかったときに送出される
         """
 
-        USERNAME_MAX_LENGTH = 255
-
         # 文字長
         if not validator.is_valid_max_length(username, USERNAME_MAX_LENGTH):
-            raise ValidationError(
-                {
-                    'username': f'ユーザ名は{USERNAME_MAX_LENGTH}文字以下で入力してください。'
-                }
-            )
+            raise ValidationError(f'ユーザ名は{USERNAME_MAX_LENGTH}文字以下で入力してください。')
 
         # ユニーク
         if not validator.is_unique_model(User, {'username': username}):
-            raise ValidationError(
-                {
-                    'username': f'ユーザ名はすでに使用されています。'
-                }
-            )
+            raise ValidationError('ユーザ名はすでに使用されています。')
 
         return username

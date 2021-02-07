@@ -1,5 +1,5 @@
 from rest_framework.status import HTTP_401_UNAUTHORIZED
-from common.exception_handler import handle_exception
+from common.exception.exception_handler import handle_exception
 
 from .exception_handler_data import data_handle_exception
 

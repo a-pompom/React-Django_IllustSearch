@@ -7,7 +7,7 @@ from common.request_response.api_response import api_response_handler
 from .app_exception import UnAuthorizedException
 
 
-class TypeExceptionContext(TypedDict):
+class ExceptionContext(TypedDict):
     """ 例外送出時点のViewコンテキスト """
     view: views.APIView
     args: Tuple[Any]
@@ -15,7 +15,7 @@ class TypeExceptionContext(TypedDict):
     request: Request
 
 
-def handle_exception(exception: Exception, context: TypeExceptionContext) -> Union[Response, None]:
+def handle_exception(exception: Exception, context: ExceptionContext) -> Union[Response, None]:
     """ 例外に応じたAPIResponseを生成
 
     Parameters

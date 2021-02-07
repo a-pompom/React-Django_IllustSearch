@@ -6,14 +6,16 @@ from rest_framework import status, views
 from rest_framework.request import Request,HttpRequest
 from rest_framework.response import Response
 
-from common.login_user_handler import LoginRequiredMixin
+from common.request_response.login_user_handler import LoginRequiredMixin
 
 from app_login.models import User
 
-class DataGetLoginUser:
+USER_ID = 'f503f432-7a5a-47e4-bc35-295f0fe2d853'
 
-    # DRFのRequest, 期待結果(ユーザ)
-    ParamType = Tuple[Request, Union[User, None]]
+# DRFのRequest, 期待結果(ユーザ)
+ParamType = Tuple[Request, Union[User, None]]
+
+class DataGetLoginUser:
 
     def _get_param(self, request: Request, expected: Union[User, None]) -> ParamType:
         return (
@@ -23,8 +25,7 @@ class DataGetLoginUser:
 
     def get_specified_user_request(self) -> ParamType:
 
-        expected_user_id = 1
-        expected = User(pk=expected_user_id)
+        expected = User(user_id=USER_ID)
         request = Request(HttpRequest())
         request.user = expected
 

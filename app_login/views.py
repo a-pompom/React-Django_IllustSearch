@@ -1,6 +1,7 @@
 from typing import Callable
 
 from django.contrib.auth import login
+from django.contrib.auth.hashers import make_password
 from django.db.models.base import Model
 from rest_framework import views
 from rest_framework.request import Request
@@ -35,19 +36,18 @@ class LoginView(views.APIView):
             ユーザ情報JSONを格納したレスポンス
         """
 
-        user = User.objects.all()
-
+        is_user_exists = User.objects.count() != 0
         # ユーザが空のときは、デフォルトユーザとしてルートユーザを作成
-        if not len(user):
+        if not is_user_exists:
             root_user = User(
                 username='user',
             )
             root_user.save()
-            user = User.objects.all()
 
-        serializer = LoginSerializer(instance=user, many=True)
+        users = User.objects.all()
+        serializer = LoginSerializer(instance=users, many=True)
 
-        return api_response_handler.success.render_with_body({'body': {'users': serializer.data}})
+        return api_response_handler.success.render_with_body({'users': serializer.data})
 
     def post(self, request: Request) -> Response:
         """ ログイン処理 ログインの成否はステータスコードで判定
@@ -96,7 +96,7 @@ class SignUpView(views.APIView):
     """ ユーザ登録API用View """
 
     def __init__(self):
-        self._single_model_view_handler = get_single_model_view_handler('signup', SignupSerializer, User)
+        self._single_model_view_handler = get_single_model_view_handler('user', SignupSerializer, User)
 
     def post(self, request: Request) -> Response:
         """ ユーザ登録処理
@@ -111,7 +111,9 @@ class SignUpView(views.APIView):
             ユーザ登録成功 -> 登録成功メッセージ
         """        
 
-        get_model_instance: Callable[[Serializer], Model] = lambda serializer: User(username=serializer.validated_data['username'])
+        get_model_instance: Callable[[Serializer], Model] = lambda serializer: User.objects.create(
+            username=serializer.validated_data['username'], password=make_password('root')
+        )
 
         return self._single_model_view_handler.post(
             SignupSerializer(data=request.data),

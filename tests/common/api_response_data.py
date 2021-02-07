@@ -7,7 +7,7 @@ from app_login.models import User
 from app_login.serializer import SignupSerializer
 from config.messages import messages
 
-from common.api_response import SuccessAPIResponse, FailureAPIResponse, FieldError
+from common.request_response.api_response import SuccessAPIResponse, FailureAPIResponse, FieldError
 
 # メッセージ, ボディ, 期待結果
 SuccessParamType = Tuple[str, Any, Response]

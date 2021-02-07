@@ -1,9 +1,9 @@
 from __future__ import annotations
+import uuid
 
 from django.db import models
 from django.db.models import CharField
 from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.hashers import make_password
 
 class User(AbstractBaseUser):
     """ 認証用ユーザ """
@@ -12,6 +12,13 @@ class User(AbstractBaseUser):
         db_table = 'm_user'
 
     USERNAME_FIELD = 'username'
+
+    # ユーザ識別子
+    user_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     # ユーザ名 ユニーク
     username: CharField[str, str] = models.CharField(
@@ -24,7 +31,6 @@ class User(AbstractBaseUser):
     password: CharField[str, str] = models.CharField(
         name='password',
         max_length=255,
-        default=make_password('root')
     )
 
     # ユーザアイコンのパス
@@ -34,8 +40,8 @@ class User(AbstractBaseUser):
         null=True
     )
 
-    def get_id(self) -> int:
-        return int(self.pk)
+    def get_id(self) -> str:
+        return self.user_id
 
     def __str__(self):
 
